@@ -1,0 +1,5 @@
+# Python 3 cache
+__pycache__
+
+# Visual Studio Code
+.vscode
