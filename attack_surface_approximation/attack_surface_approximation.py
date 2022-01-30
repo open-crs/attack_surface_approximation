@@ -9,7 +9,7 @@ from pycparser import c_parser
 from .exceptions import NotELFFileException, MainNotFoundException
 from .configuration import Configuration
 
-GHIDRA_AUTOMATION_SCRIPT = "attack_surface_discovery/ghidra_automation.py"
+GHIDRA_AUTOMATION_SCRIPT = "attack_surface_approximation/ghidra_automation.py"
 GHIDRA_REPORT_START_LINE = "INFO  SCRIPT"
 GHIDRA_REPORT_FINISH_LINE = "INFO  ANALYZING"
 TEXT_SECTION_IDENTIFIER = ".text"
@@ -72,9 +72,9 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
         super().generic_visit(node)
 
 
-class AttackSurfaceDiscovery:
+class AttackSurfaceApproximation:
 
-    _configuration: object = Configuration.AttackSurfaceDiscovery
+    _configuration: object = Configuration.AttackSurfaceApproximation
     _filename: str
     _elf: ELFFile
     _was_ghidra_analyzed: bool

@@ -1,8 +1,8 @@
-# `attack_surface_discovery` 🤺
+# `attack_surface_approximation` 🤺
 
 ## Description 🖼️
 
-**`attack_surface_discovery`** is the CRS module that deals with the **discovery of the attack surface in a vulnerable program**.
+**`attack_surface_approximation`** is the CRS module that deals with the **approximation of the attack surface in a vulnerable program**.
 
 Some input mechanisms are omitted: elements of the user interface, signals, devices and interrupts. At the moment, the **supported mechanisms** are the following:
 - Files;

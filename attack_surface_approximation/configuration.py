@@ -1,6 +1,6 @@
 class Configuration:
 
-    class AttackSurfaceDiscovery:
+    class AttackSurfaceApproximation:
         # Folders
         GHIDRA_FOLDER = "/opt/ghidra/"
         GHIDRA_HEADLESS_ANALYZER = GHIDRA_FOLDER + "support/analyzeHeadless"

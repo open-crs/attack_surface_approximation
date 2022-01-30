@@ -3,7 +3,7 @@
 import os
 import sys
 
-from attack_surface_discovery import AttackSurfaceDiscovery
+from attack_surface_approximation import AttackSurfaceApproximation
 
 
 def main() -> None:
@@ -14,8 +14,8 @@ def main() -> None:
 
     # Discover
     filename = sys.argv[1]
-    discovery = AttackSurfaceDiscovery(filename)
-    input_types = discovery.detect_all()
+    approximation = AttackSurfaceApproximation(filename)
+    input_types = approximation.detect_all()
 
     # Log
     files = input_types.files
