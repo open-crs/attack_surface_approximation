@@ -1,4 +1,7 @@
-# Python 3 cache
+# Test executables
+tests/**/*.elf
+
+# Cache of Python 3
 __pycache__
 
 # Visual Studio Code

@@ -11,6 +11,17 @@ Some input mechanisms are omitted: elements of the user interface, signals, devi
 - Networking; and
 - Environment variables.
 
+## How It Works 🪄
+
+The module works by automating Ghidra for statical binary analysis. It extracts information and apply heuristics to determine if a given input stream is present.
+
+Examples of such heuristics are:
+- For standard input, calls to `getc()` and `gets()`;
+- For networking, calls to `recv()` and `recvfrom()`; and
+- For arguments, occcurances of `argc` and `argv` in the `main()`'s decompilation; and
+
+## Limitations 🚧
+
 To limit the research scope, some **constraints** were imposed for the analyzed programs:
 - ELF format;
 - x86 architecture;
@@ -19,7 +30,7 @@ To limit the research scope, some **constraints** were imposed for the analyzed 
 
 ## Setup 🔧
 
-Only install the required packages via `pip3 install -r requirements.txt`.
+Only install Ghidra in `/opt/ghidra` and the required packages via `pip3 install -r requirements.txt`.
 
 ## Usage 🧰
 
