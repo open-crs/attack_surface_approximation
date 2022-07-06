@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "attack_surface_approximation"
+version = "0.1.0"
+description = "Module for approximating the attack surface of an executable"
+authors = ["OpenCRS"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pycparser = "^2.21"
+pyelftools = "^0.28"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+isort = "^5.10.1"
+pylint = "^2.14.4"
+
+[tool.poetry.scripts]
+attack_surface_approximation = "attack_surface_approximation.cli:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.MASTER]
+init-hook="import sys; sys.path.append('.')"
+
+[tool.pylint.MESSAGES_CONTROL]
+disable="missing-function-docstring, missing-class-docstring"

@@ -1,8 +1,7 @@
 # Test executables
 tests/**/*.elf
 
-# Cache of Python 3
+# Python 3
+poetry.lock
 __pycache__
-
-# Visual Studio Code
-.vscode
+.venv

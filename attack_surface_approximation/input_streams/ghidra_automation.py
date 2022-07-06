@@ -3,12 +3,9 @@
 This script uses Ghidra for traversing the function of an ELF, getting all the
 called functions and printing them on screen.
 """
-import sys
 
-from ghidra.app.decompiler import DecompileOptions, DecompInterface
-from ghidra.program.database.function import FunctionDB
+from ghidra.app.decompiler import DecompInterface
 from ghidra.util.task import ConsoleTaskMonitor, TaskMonitor
-
 
 REPORT_DELIMITOR = 16 * "*"
 
@@ -20,11 +17,8 @@ def extract_calls():
     # Iterate through functions
     called_functions = set()
     for function in functions:
-        listing = currentProgram.getListing()
-
         # Get the API calls for the current function
-        current_called_functions = function.getCalledFunctions(
-            TaskMonitor.DUMMY)
+        current_called_functions = function.getCalledFunctions(TaskMonitor.DUMMY)
         for called_function in current_called_functions:
             # Print the name of the function
             called_functions.add(called_function)
@@ -49,6 +43,7 @@ def decompile_main():
 
     # Print the C code
     print(code)
+
 
 def print_delimitpr():
     print(REPORT_DELIMITOR)

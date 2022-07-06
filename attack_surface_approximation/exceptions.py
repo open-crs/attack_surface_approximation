@@ -1,15 +1,17 @@
-class AttackSurfaceApproximationException(Exception):
+"""Module defining the exceptions raised by the package."""
+
+
+class InputStreamsDetectorException(Exception):
     """Generic exception"""
-    pass
 
-class ELFNotFoundException(AttackSurfaceApproximationException):
+
+class ELFNotFoundException(InputStreamsDetectorException):
     """The provided ELF file was not found."""
-    pass
 
-class NotELFFileException(AttackSurfaceApproximationException):
+
+class NotELFFileException(InputStreamsDetectorException):
     """The provided file is not an ELF one."""
-    pass
 
-class MainNotFoundException(AttackSurfaceApproximationException):
+
+class MainNotFoundException(InputStreamsDetectorException):
     """The main function could not be found. Check if the binary is stripped."""
-    pass
