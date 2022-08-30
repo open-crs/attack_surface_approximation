@@ -30,11 +30,15 @@ USER $USER
 # Set the working directory
 WORKDIR $HOME
 
-# Create the QBDI build environment
+# Create the fuzzing environment
 RUN qbdi-preload-template-X86
+RUN mkdir results
+
+# Copy some relevant files
 COPY qbdi_preload_template.c .
-COPY dictionaries/ .
-RUN mkdir traces
+COPY utarray.h .
+
+# Build the QBDI library
 RUN cmake . && make
 
 # Command to run on startup

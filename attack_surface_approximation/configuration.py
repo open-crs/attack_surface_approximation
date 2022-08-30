@@ -1,10 +1,7 @@
-"""Module defining the configuration of the package."""
-
-
 class Configuration:
     class GhidraDecompilation:
         # Folders
-        GHIDRA_FOLDER = "/opt/ghidra/"
+        GHIDRA_FOLDER = "/home/iosifache/Documents/Resources/Programs/ghidra/"
         GHIDRA_HEADLESS_ANALYZER = GHIDRA_FOLDER + "support/analyzeHeadless"
         GHIDRA_PROJECT_FOLDER = "/tmp/ghidra_projects/"
 
@@ -34,4 +31,25 @@ class Configuration:
             "fgetc",
             "fscanf",
         ]
-        INPUT_INDICATOR_STDIN = ["getc", "getchar", "gets", "scanf", "__isoc99_scanf"]
+        INPUT_INDICATOR_STDIN = [
+            "getc",
+            "getchar",
+            "gets",
+            "scanf",
+            "__isoc99_scanf",
+        ]
+
+    class QBDIAnalysis:
+        IMAGE_TAG = "qbdi_args_fuzzing"
+        HOST_FOLDER = "/tmp/qbdi/"
+        HOST_DICTIONARIES_FOLDER = HOST_FOLDER + "dictionaries/"
+        HOST_EXECUTABLE_FOLDER = HOST_FOLDER + "target/"
+        HOST_EXECUTABLE = HOST_EXECUTABLE_FOLDER + "target"
+        HOST_RESULTS_FOLDER = HOST_FOLDER + "results/"
+        CONTAINER_EXECUTABLE_FOLDER = "/home/docker/target/"
+        CONTAINER_EXECUTABLE = CONTAINER_EXECUTABLE_FOLDER + "target"
+        CONTAINER_RESULTS_FOLDER = "/home/docker/results/"
+        CONTAINER_TEMP_FILE = "/tmp/canary.opencrs"
+
+    class Fuzzer:
+        GENERATE_RANDOM_BASELINE_ARGUMENTS = False

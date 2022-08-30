@@ -1,4 +1,3 @@
-"""Module for implementing the approximation automation."""
 import os
 import typing
 
@@ -6,10 +5,13 @@ from elftools.elf.elffile import ELFError, ELFFile
 from pycparser import c_parser
 
 from attack_surface_approximation.configuration import Configuration
-from attack_surface_approximation.exceptions import (ELFNotFoundException,
-                                                     NotELFFileException)
-from attack_surface_approximation.input_streams.ghidra_decompilation import \
-    GhidraDecompilation
+from attack_surface_approximation.exceptions import (
+    ELFNotFoundException,
+    NotELFFileException,
+)
+from attack_surface_approximation.static_input_streams_detection.ghidra_decompilation import (
+    GhidraDecompilation,
+)
 
 TEXT_SECTION_IDENTIFIER = ".text"
 MAIN_FUNCTION_NAME = "main"
@@ -23,7 +25,7 @@ class PresentInputStreams:
     networking: bool
     environment_variables: bool
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.files = False
         self.arguments = False
         self.stdin = False
@@ -35,7 +37,7 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
     __parameters_names: typing.List[str]
     __are_parameters_used: bool
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__parameters_names = []
         self.__are_parameters_used = False
 
@@ -58,13 +60,13 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
     def are_parameters_used(self) -> bool:
         return self.__are_parameters_used
 
-    def visit_ParamList(
+    def visit_ParamList(  # pylint: disable=invalid-name
         self, node: c_parser.c_ast.Node
-    ):  # pylint: disable=invalid-name
+    ) -> None:  # pylint: disable=invalid-name
         # Extract the parameters of the function
         self.__parameters_names = [parameter.name for parameter in node.params]
 
-    def generic_visit(self, node: c_parser.c_ast.Node):
+    def generic_visit(self, node: c_parser.c_ast.Node) -> None:
         # Check if the parameters are used in the current node
         self.__check_parameters_used(node)
 
@@ -104,15 +106,19 @@ class InputStreamsDetector:
         return len(common_elements) != 0
 
     def detect_env(self) -> PresentInputStreams:
-        self.__input_types.environment_variables = self.__have_element_in_common(
-            self.__decompilation.calls, self.__configuration.INPUT_INDICATOR_ENV
+        self.__input_types.environment_variables = (
+            self.__have_element_in_common(
+                self.__decompilation.calls,
+                self.__configuration.INPUT_INDICATOR_ENV,
+            )
         )
 
         return self.__input_types
 
     def detect_networking(self) -> PresentInputStreams:
         self.__input_types.networking = self.__have_element_in_common(
-            self.__decompilation.calls, self.__configuration.INPUT_INDICATOR_NETWORKING
+            self.__decompilation.calls,
+            self.__configuration.INPUT_INDICATOR_NETWORKING,
         )
 
         return self.__input_types
@@ -134,7 +140,8 @@ class InputStreamsDetector:
         # types can marked as possible (the next module, the dynamic one, will
         # be activated for further analysis).
         self.__input_types.files = self.__have_element_in_common(
-            self.__decompilation.calls, self.__configuration.INPUT_INDICATOR_FILES_STDIN
+            self.__decompilation.calls,
+            self.__configuration.INPUT_INDICATOR_FILES_STDIN,
         )
 
         return self.__input_types

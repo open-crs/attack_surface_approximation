@@ -1,4 +1,3 @@
-"""[summary]"""
 import os
 import subprocess
 import typing
@@ -7,7 +6,8 @@ from attack_surface_approximation.configuration import Configuration
 
 COMMENT_PREFIX = "/* WARNING"
 GHIDRA_AUTOMATION_SCRIPT = (
-    "attack_surface_approximation/input_streams/ghidra_automation.py"
+    "attack_surface_approximation/"
+    "static_input_streams_detection/ghidra_automation.py"
 )
 GHIDRA_REPORT_START_LINE = "INFO  SCRIPT"
 GHIDRA_REPORT_FINISH_LINE = "INFO  ANALYZING"
@@ -22,7 +22,7 @@ class GhidraDecompilation:
     def __init__(self, filename: str) -> None:
         self.filename = filename
         self.decompiled_code = ""
-        self.calls = []
+        self.calls = set()
 
         self.__analyze_with_ghidra()
 
@@ -42,7 +42,7 @@ class GhidraDecompilation:
         # parse it.
         no_comments_code = []
         for line in self.decompiled_code.splitlines():
-            if not COMMENT_PREFIX in line:
+            if COMMENT_PREFIX not in line:
                 no_comments_code.append(line)
         self.decompiled_code = "\n".join(no_comments_code)
 

@@ -1,6 +1,3 @@
-"""Module defining the exceptions raised by the package."""
-
-
 class InputStreamsDetectorException(Exception):
     """Generic exception"""
 
@@ -14,4 +11,5 @@ class NotELFFileException(InputStreamsDetectorException):
 
 
 class MainNotFoundException(InputStreamsDetectorException):
-    """The main function could not be found. Check if the binary is stripped."""
+    """The main function could not be found. Check if the binary is stripped.
+    """

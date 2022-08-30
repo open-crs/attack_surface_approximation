@@ -1,9 +1,3 @@
-"""Python script for generating arguments dictionaries.
-
-This needs to be called only through Poetry, with the command specified in
-README.md.
-"""
-
 import importlib
 import pkgutil
 import typing
@@ -13,10 +7,10 @@ import attack_surface_approximation.dictionaries_generators.heuristics
 
 
 class TopFilter:
-    def __init__(self, top, /):
+    def __init__(self, top: int, /) -> None:
         self.top = top
 
-    def filter(self, elements: typing.List[str]):
+    def filter(self, elements: typing.List[str]) -> typing.List[str]:
         counter = Counter(elements)
 
         return [element for element, _ in counter.most_common(self.top)]
@@ -35,7 +29,7 @@ class ArgumentsGenerator:
         ):
             yield name
 
-    def dump(self, output_file, top_count: int = 0):
+    def dump(self, output_file: str, top_count: int = 0) -> None:
         # If required, prepare and use the filter
         if top_count != 0:
             top_filter = TopFilter(top_count)
@@ -54,8 +48,10 @@ class ArgumentsGenerator:
         # Dump the arguments
         open(output_file, "w", encoding="utf-8").writelines(arguments)
 
-    def generate(self, heuristic_id):
+    def generate(self, heuristic_id: str) -> None:
         heuristic_module = importlib.import_module(
-            f"attack_surface_approximation.dictionaries_generators.heuristics.{heuristic_id}"
+            "attack_surface_approximation.dictionaries_generators"
+            f".heuristics.{heuristic_id}"
         )
+
         self.arguments = heuristic_module.generate()

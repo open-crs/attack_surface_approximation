@@ -16,7 +16,7 @@
 #define MIN_MAPPED_ADDRESS 0xf0000000
 #define BLOCKS_USED_IN_HASH 10000
 #define MAX_ARGS_LENGTH 100
-#define OUTPUT_FOLDER "traces/"
+#define OUTPUT_FOLDER "results/"
 
 /* Structures */
 
@@ -176,6 +176,7 @@ int qbdipreload_on_main(int argc, char **argv) {
         strcat(command_line, argv[i]);
         strcat(command_line, " ");
     }
+    command_line[strlen(command_line) - 1] = '\0';
 
     return QBDIPRELOAD_NOT_HANDLED;
 }

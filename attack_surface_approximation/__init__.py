@@ -1,6 +1,7 @@
-"""Package for discovering the attack surface of an executable."""
-from attack_surface_approximation.exceptions import InputStreamsDetectorException
-from attack_surface_approximation.input_streams import (
+from attack_surface_approximation.exceptions import (
+    InputStreamsDetectorException,
+)
+from attack_surface_approximation.static_input_streams_detection import (
     InputStreamsDetector,
     PresentInputStreams,
 )

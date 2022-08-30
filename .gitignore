@@ -1,7 +1,9 @@
-# Test executables
-tests/**/*.elf
+# Poetry
+
+/.venv
 
 # Python 3
-poetry.lock
+
 __pycache__
-.venv
+*.pyc
+/poetry.lock

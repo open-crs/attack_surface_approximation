@@ -1,8 +1,8 @@
-"""Module for generating arguments in the "-<letter>" format."""
 import string
+import typing
 
 
-def generate():
+def generate() -> typing.Generator[str, None, None]:
     dictionary = string.ascii_letters + string.digits
 
     for char in dictionary:

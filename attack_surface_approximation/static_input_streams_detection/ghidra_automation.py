@@ -4,6 +4,9 @@ This script uses Ghidra for traversing the function of an ELF, getting all the
 called functions and printing them on screen.
 """
 
+# pylint: skip-file
+# flake8: noqa
+
 from ghidra.app.decompiler import DecompInterface
 from ghidra.util.task import ConsoleTaskMonitor, TaskMonitor
 
@@ -18,7 +21,9 @@ def extract_calls():
     called_functions = set()
     for function in functions:
         # Get the API calls for the current function
-        current_called_functions = function.getCalledFunctions(TaskMonitor.DUMMY)
+        current_called_functions = function.getCalledFunctions(
+            TaskMonitor.DUMMY
+        )
         for called_function in current_called_functions:
             # Print the name of the function
             called_functions.add(called_function)
