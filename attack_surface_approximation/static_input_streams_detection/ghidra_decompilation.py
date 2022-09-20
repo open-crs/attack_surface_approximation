@@ -5,12 +5,12 @@ import typing
 from attack_surface_approximation.configuration import Configuration
 
 COMMENT_PREFIX = "/* WARNING"
-GHIDRA_AUTOMATION_SCRIPT = (
+AUTOMATION_SCRIPT = (
     "attack_surface_approximation/"
     "static_input_streams_detection/ghidra_automation.py"
 )
-GHIDRA_REPORT_START_LINE = "INFO  SCRIPT"
-GHIDRA_REPORT_FINISH_LINE = "INFO  ANALYZING"
+REPORT_START_LINE = "INFO  SCRIPT"
+REPORT_FINISH_LINE = "INFO  ANALYZING"
 REPORT_DELIMITOR = 16 * "*"
 
 
@@ -24,38 +24,22 @@ class GhidraDecompilation:
         self.decompiled_code = ""
         self.calls = set()
 
+        self.__ensure_project_folder()
         self.__analyze_with_ghidra()
 
-    def __process_decompiled_code(self) -> None:
-        # Replace undefs
-        self.decompiled_code = self.decompiled_code.replace(
-            "undefined4", "int"
-        ).replace("undefined", "char")
-
-        # Replace with longs
-        self.decompiled_code = self.decompiled_code.replace("char8", "long")
-
-        # Replace useless double line
-        self.decompiled_code = self.decompiled_code.replace("\n\n", "\n")
-
-        # Skip a line containing a comment. pycparser won't be able to
-        # parse it.
-        no_comments_code = []
-        for line in self.decompiled_code.splitlines():
-            if COMMENT_PREFIX not in line:
-                no_comments_code.append(line)
-        self.decompiled_code = "\n".join(no_comments_code)
+    def __ensure_project_folder(self) -> None:
+        if not os.path.isdir(self.__configuration.PROJECT_FOLDER):
+            os.mkdir(self.__configuration.PROJECT_FOLDER)
 
     def __analyze_with_ghidra(self) -> None:
-        # Ensure that the project folder is created
-        if not os.path.isdir(self.__configuration.GHIDRA_PROJECT_FOLDER):
-            os.mkdir(self.__configuration.GHIDRA_PROJECT_FOLDER)
+        analysis_report = self.__run_ghidra()
 
-        # Get the full path to the automation script
-        analysis_script = os.path.join(os.getcwd(), GHIDRA_AUTOMATION_SCRIPT)
+        self.__process_analysis_report(analysis_report)
 
-        # Run Ghidra
-        ghidra_command = self.__configuration.GHIDRA_COMMAND_FMT.format(
+    def __run_ghidra(self) -> typing.List[str]:
+        analysis_script = os.path.join(os.getcwd(), AUTOMATION_SCRIPT)
+
+        ghidra_command = self.__configuration.COMMAND_FMT.format(
             self.filename, analysis_script
         ).split(" ")
         try:
@@ -65,23 +49,22 @@ class GhidraDecompilation:
                 stderr=subprocess.PIPE,
                 check=True,
             )
+
+            return process.stdout.decode("utf-8").splitlines()
         except subprocess.CalledProcessError:
             return None
 
-        # Get the Ghidra's report and process it with a state machine logic
-        analysis_report = process.stdout.decode("utf-8").splitlines()
+    def __process_analysis_report(
+        self, analysis_report: typing.List[str]
+    ) -> None:
         is_code_present = False
         are_calls_present = False
         for line in analysis_report:
-            # If the report start is present, then start to read the decompiled
-            # code
-            if line.startswith(GHIDRA_REPORT_START_LINE):
+            if line.startswith(REPORT_START_LINE):
                 is_code_present = True
                 continue
 
-            # If the delimitor is not reached, then save the decompiled code
             if is_code_present:
-                # If the delimitor is reached, start to read the calls
                 if line.startswith(REPORT_DELIMITOR):
                     is_code_present = False
                     are_calls_present = True
@@ -91,14 +74,35 @@ class GhidraDecompilation:
 
                 continue
 
-            # Save the calls
             if are_calls_present:
-                # If the end of the report is reached, then the rest of the
-                # output is useless
-                if line.startswith(GHIDRA_REPORT_FINISH_LINE):
+                if line.startswith(REPORT_FINISH_LINE):
                     break
 
                 self.calls.add(line.strip())
 
-        # Replace the Ghidra undefineds
         self.__process_decompiled_code()
+
+    def __process_decompiled_code(self) -> None:
+        self.__replace_undefs()
+        self.__replace_longs()
+        self.__replace_double_lines()
+        self.__replace_comments_for_pycparser()
+
+    def __replace_undefs(self) -> None:
+        self.decompiled_code = self.decompiled_code.replace(
+            "undefined4", "int"
+        ).replace("undefined", "char")
+
+    def __replace_longs(self) -> None:
+        self.decompiled_code = self.decompiled_code.replace("char8", "long")
+
+    def __replace_double_lines(self) -> None:
+        self.decompiled_code = self.decompiled_code.replace("\n\n", "\n")
+
+    def __replace_comments_for_pycparser(self) -> None:
+        # pycparser won't be able to parse lines with comments.
+        no_comments_code = []
+        for line in self.decompiled_code.splitlines():
+            if COMMENT_PREFIX not in line:
+                no_comments_code.append(line)
+        self.decompiled_code = "\n".join(no_comments_code)

@@ -6,7 +6,9 @@ import typing
 import docker
 from docker.models.containers import ExecResult
 
-from attack_surface_approximation.arguments_fuzzing.arguments_types import ArgumentsPair
+from attack_surface_approximation.arguments_fuzzing.arguments_types import (
+    ArgumentsPair,
+)
 from attack_surface_approximation.configuration import Configuration
 
 
@@ -69,7 +71,9 @@ class QBDIAnalysis:
         self.__touch_nested_folder(self.__configuration.HOST_FOLDER)
         self.__touch_nested_folder(self.__configuration.HOST_EXECUTABLE_FOLDER)
         self.__touch_nested_folder(self.__configuration.HOST_RESULTS_FOLDER)
-        shutil.copyfile(self.executable_filename, self.__configuration.HOST_EXECUTABLE)
+        shutil.copyfile(
+            self.executable_filename, self.__configuration.HOST_EXECUTABLE
+        )
         os.chmod(self.__configuration.HOST_EXECUTABLE, stat.S_IXUSR)
 
     def __create_container(self) -> None:
@@ -97,7 +101,9 @@ class QBDIAnalysis:
         )
 
     def create_temp_file_inside_container(self) -> str:
-        self.__container.exec_run(f"touch {self.__configuration.CONTAINER_TEMP_FILE}")
+        self.__container.exec_run(
+            f"touch {self.__configuration.CONTAINER_TEMP_FILE}"
+        )
 
         return self.__configuration.CONTAINER_TEMP_FILE
 
@@ -107,10 +113,13 @@ class QBDIAnalysis:
         stringified_arguments = argument.to_str()
         stdin_avoidance_command = "echo '\n' |" if timeout_retry else ""
 
+        # TODO
         return (  # {CONTAINER_EXECUTABLE}
-            f"timeout {self.timeout} sh -c '{stdin_avoidance_command} LD_BIND_NOW=1"
-            " LD_PRELOAD=./libqbdi_tracer.so"
-            f" /bin/uname {stringified_arguments}'"
+            f"timeout {self.timeout} sh -c"
+            f"'{stdin_avoidance_command} LD_BIND_NOW=1 "
+            "LD_PRELOAD=./libqbdi_tracer.so "
+            f"{self.__configuration.CONTAINER_EXECUTABLE} "
+            f"{stringified_arguments}'"
         )
 
     def __build_and_run_analyze_command(
@@ -146,10 +155,14 @@ class QBDIAnalysis:
     def __run_analysis(
         self, argument: ArgumentsPair, timeout_retry: bool = False
     ) -> RawQBDIAnalysisResult:
-        raw_result = self.__build_and_run_analyze_command(argument, timeout_retry)
+        raw_result = self.__build_and_run_analyze_command(
+            argument, timeout_retry
+        )
 
         result_filename = self.__get_analysis_result_filename(argument)
-        bbs_count, bbs_hash, uses_file = self.__parse_raw_output(result_filename)
+        bbs_count, bbs_hash, uses_file = self.__parse_raw_output(
+            result_filename
+        )
 
         return RawQBDIAnalysisResult(
             bbs_count, bbs_hash, uses_file, raw_result.exit_code

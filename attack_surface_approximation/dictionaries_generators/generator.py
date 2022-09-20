@@ -30,7 +30,6 @@ class ArgumentsGenerator:
             yield name
 
     def dump(self, output_file: str, top_count: int = 0) -> None:
-        # If required, prepare and use the filter
         if top_count != 0:
             top_filter = TopFilter(top_count)
             filter_func = getattr(top_filter, "filter", None)
@@ -38,14 +37,11 @@ class ArgumentsGenerator:
         else:
             filtered_args = self.arguments
 
-        # Sort the arguments alphabetically
         arguments = list(filtered_args)
         arguments.sort()
 
-        # Add a new line to each argument
         arguments = [argument + "\n" for argument in arguments]
 
-        # Dump the arguments
         open(output_file, "w", encoding="utf-8").writelines(arguments)
 
     def generate(self, heuristic_id: str) -> None:

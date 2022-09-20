@@ -42,18 +42,15 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
         self.__are_parameters_used = False
 
     def __check_parameters_used(self, obj: object) -> None:
-        # Get all the attributes of the current object
         attrs = [
             attr
             for attr in dir(obj)
             if not callable(getattr(obj, attr)) and not attr.startswith("__")
         ]
 
-        # Check if the "name" member appears here
         if "name" in attrs and getattr(obj, "name") in self.__parameters_names:
             self.__are_parameters_used = True
 
-        # Call recursively the members of the object
         for attr in attrs:
             self.__check_parameters_used(attr)
 
@@ -63,14 +60,11 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
     def visit_ParamList(  # pylint: disable=invalid-name
         self, node: c_parser.c_ast.Node
     ) -> None:  # pylint: disable=invalid-name
-        # Extract the parameters of the function
         self.__parameters_names = [parameter.name for parameter in node.params]
 
     def generic_visit(self, node: c_parser.c_ast.Node) -> None:
-        # Check if the parameters are used in the current node
         self.__check_parameters_used(node)
 
-        # Call the overwritten method
         super().generic_visit(node)
 
 
@@ -82,7 +76,6 @@ class InputStreamsDetector:
 
     def __init__(self, filename: str) -> None:
         if os.path.isfile(filename):
-            # Check if the provided file is an ELF
             given_file = open(filename, "rb")
             try:
                 ELFFile(given_file)
@@ -135,10 +128,9 @@ class InputStreamsDetector:
         return self.__input_types
 
     def detect_files(self) -> PresentInputStreams:
-        # Check for operations with files. As some system calls can be used with
-        # a file descriptor (that can identify the stdin too), the both call
-        # types can marked as possible (the next module, the dynamic one, will
-        # be activated for further analysis).
+        # As some system calls can be used with a file descriptor (that can identify
+        # the stdin too), the both call types can marked as possible (the next module,
+        # the dynamic one, will be activated for further analysis).
         self.__input_types.files = self.__have_element_in_common(
             self.__decompilation.calls,
             self.__configuration.INPUT_INDICATOR_FILES_STDIN,
@@ -147,15 +139,12 @@ class InputStreamsDetector:
         return self.__input_types
 
     def detect_arguments(self) -> PresentInputStreams:
-        # Parse the C output from Ghidra
         parser = c_parser.CParser()
         ast = parser.parse(self.__decompilation.decompiled_code)
 
-        # Get all the occurances of parameters
         visitor = ParametersCheckVisitor()
         visitor.visit(ast)
 
-        # Set the usage of arguments
         self.__input_types.arguments = visitor.are_parameters_used()
 
         return self.__input_types

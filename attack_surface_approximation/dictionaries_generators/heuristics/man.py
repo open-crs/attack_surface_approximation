@@ -10,7 +10,6 @@ def __get_possible_man_locations() -> typing.Generator[str, None, None]:
             with open(conf_filename, "r", encoding="utf-8") as conf_file:
                 content = conf_file.read().split("\n")
 
-                # Mandatory paths
                 mandatory_lines = [
                     line
                     for line in content
@@ -19,7 +18,6 @@ def __get_possible_man_locations() -> typing.Generator[str, None, None]:
                 for line in mandatory_lines:
                     yield line.split()[-1]
 
-                # Executables path maps
                 path_maps = [
                     line for line in content if line.startswith("MANPATH_MAP")
                 ]
@@ -61,8 +59,6 @@ def __get_arguments_from_manual(
         try:
             content = manual.read()
         except UnicodeDecodeError:
-            # If an exception is raised, then the file is in other language than
-            # English.
             return
 
         if unescape:
@@ -73,7 +69,6 @@ def __get_arguments_from_manual(
 
 
 def generate() -> typing.List[str]:
-    # Get the arguments and ensure their uniqueness
     all_arguments = set()
     for manual_filename in __get_all_manuals():
         arguments = __get_arguments_from_manual(

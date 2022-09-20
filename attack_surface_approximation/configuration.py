@@ -1,23 +1,19 @@
 class Configuration:
     class GhidraDecompilation:
-        # Folders
-        GHIDRA_FOLDER = "/home/iosifache/Documents/Resources/Programs/ghidra/"
-        GHIDRA_HEADLESS_ANALYZER = GHIDRA_FOLDER + "support/analyzeHeadless"
-        GHIDRA_PROJECT_FOLDER = "/tmp/ghidra_projects/"
-
-        # Miscellaneous
-        GHIDRA_PROJECT_NAME = "project"
-        GHIDRA_COMMAND_FMT = (
-            GHIDRA_HEADLESS_ANALYZER
+        FOLDER = "/home/iosifache/Documents/Resources/Programs/ghidra/"
+        HEADLESS_ANALYZER = FOLDER + "support/analyzeHeadless"
+        PROJECT_FOLDER = "/tmp/ghidra_projects/"
+        PROJECT_NAME = "project"
+        COMMAND_FMT = (
+            HEADLESS_ANALYZER
             + " "
-            + GHIDRA_PROJECT_FOLDER
+            + PROJECT_FOLDER
             + " "
-            + GHIDRA_PROJECT_NAME
+            + PROJECT_NAME
             + " -import {} -overwrite -postscript {}"
         )
 
     class InputStreamsDetector:
-        # Relevant function calls
         # At the moment, some libcalls and syscalls (for example, vfscanf) are
         # omitted due to an assumption that they are not frequently used in
         # practice. This list will anyway be continuously update

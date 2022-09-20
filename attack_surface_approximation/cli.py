@@ -4,17 +4,12 @@ import click
 from rich import print  # pylint: disable=redefined-builtin
 from rich.table import Table
 
-from attack_surface_approximation.arguments_fuzzing import (
-    ArgumentsFuzzer,
-    ArgumentsPair,
-)
-from attack_surface_approximation.dictionaries_generators import (
-    ArgumentsGenerator,
-)
+from attack_surface_approximation.arguments_fuzzing import (ArgumentsFuzzer,
+                                                            ArgumentsPair)
+from attack_surface_approximation.dictionaries_generators import \
+    ArgumentsGenerator
 from attack_surface_approximation.static_input_streams_detection import (
-    InputStreamsDetector,
-    PresentInputStreams,
-)
+    InputStreamsDetector, PresentInputStreams)
 
 
 def read_dictionary(dictionary_name: str) -> typing.List[str]:
