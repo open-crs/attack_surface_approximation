@@ -113,8 +113,7 @@ class QBDIAnalysis:
         stringified_arguments = argument.to_str()
         stdin_avoidance_command = "echo '\n' |" if timeout_retry else ""
 
-        # TODO
-        return (  # {CONTAINER_EXECUTABLE}
+        return (
             f"timeout {self.timeout} sh -c"
             f"'{stdin_avoidance_command} LD_BIND_NOW=1 "
             "LD_PRELOAD=./libqbdi_tracer.so "

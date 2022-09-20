@@ -4,101 +4,25 @@ import click
 from rich import print  # pylint: disable=redefined-builtin
 from rich.table import Table
 
-from attack_surface_approximation.arguments_fuzzing import (ArgumentsFuzzer,
-                                                            ArgumentsPair)
-from attack_surface_approximation.dictionaries_generators import \
-    ArgumentsGenerator
+from attack_surface_approximation.arguments_fuzzing import (
+    ArgumentsFuzzer,
+    ArgumentsPair,
+)
+from attack_surface_approximation.dictionaries_generators import (
+    ArgumentsGenerator,
+)
 from attack_surface_approximation.static_input_streams_detection import (
-    InputStreamsDetector, PresentInputStreams)
-
-
-def read_dictionary(dictionary_name: str) -> typing.List[str]:
-    with open(dictionary_name, "r", encoding="utf-8") as dictionary:
-        arguments = dictionary.read().strip()
-        arguments = arguments.split("\n")
-
-        return arguments
-
-
-def print_no_detected_stream() -> None:
-    print(":x: No input mechanism was detected for the given program.")
-
-
-def build_detected_streams_table(streams: dict) -> Table:
-    table = Table()
-
-    table.add_column("Stream")
-    table.add_column("Present", justify="center")
-
-    for key, value in streams.__dict__.items():
-        is_present = "Yes" if value else "No"
-        table.add_row(key, is_present)
-
-    return table
-
-
-def print_multiple_detected_streams(streams: dict) -> None:
-    print(
-        ":white_check_mark: Several input mechanisms were detected for the"
-        " given program:\n"
-    )
-
-    table = build_detected_streams_table(streams)
-    print(table)
-
-
-def print_detected_streams(streams: PresentInputStreams) -> None:
-    if not any(streams.__dict__.values()):
-        print_no_detected_stream()
-    else:
-        print_multiple_detected_streams(streams)
-
-
-def print_no_detected_argument() -> None:
-    print(":x: No argument was detected for the given program.")
-
-
-def build_arguments_table(arguments: typing.List[ArgumentsPair]) -> Table:
-    table = Table()
-    table.add_column("Argument")
-    table.add_column("Role", justify="center")
-
-    for argument in arguments:
-        argument_str = argument.to_str()
-
-        roles_str = [str(role) for role in argument.valid_roles]
-        roles = ", ".join(roles_str)
-
-        table.add_row(argument_str, roles)
-
-    return table
-
-
-def print_multiple_detected_arguments(
-    arguments: typing.List[ArgumentsPair],
-) -> None:
-    print(
-        ":white_check_mark: Several arguments were detected for the given"
-        " program:\n"
-    )
-
-    table = build_arguments_table(arguments)
-    print(table)
-
-
-def print_arguments(arguments: typing.List[ArgumentsPair]) -> None:
-    if not arguments:
-        print_no_detected_argument()
-    else:
-        print_multiple_detected_arguments(arguments)
+    InputStreamsDetector,
+    PresentInputStreams,
+)
 
 
 @click.group()
 def cli() -> None:
-    pass
+    """Discovers the attack surface of vulnerable programs."""
 
 
-@cli.command(help="Generate dictionaries with arguments, based on heuristics")
+@cli.command(help="Generate dictionaries with arguments, based on heuristics.")
 @click.option(
     "--heuristic",
     type=click.Choice(
@@ -131,7 +55,7 @@ def generate(heuristic: str, output: str, top: int) -> None:
 
 
 @cli.command(
-    help="Statically detect what input streams are used by an executable"
+    help="Statically detect what input streams are used by an executable."
 )
 @click.option(
     "--elf",
@@ -146,7 +70,28 @@ def detect(elf: str) -> None:
     print_detected_streams(streams)
 
 
-@cli.command(help="Fuzz the arguments of an executable")
+def print_detected_streams(streams: PresentInputStreams) -> None:
+    if not any(streams.__dict__.values()):
+        print_no_detected_stream()
+    else:
+        print_multiple_detected_streams(streams)
+
+
+def print_no_detected_stream() -> None:
+    print(":x: No input mechanism was detected for the given program.")
+
+
+def print_multiple_detected_streams(streams: dict) -> None:
+    print(
+        ":white_check_mark: Several input mechanisms were detected for the"
+        " given program:\n"
+    )
+
+    table = build_detected_streams_table(streams)
+    print(table)
+
+
+@cli.command(help="Fuzz the arguments of an executable.")
 @click.option(
     "--elf",
     type=click.Path(exists=True, readable=True),
@@ -160,15 +105,69 @@ def detect(elf: str) -> None:
     help="Arguments dictionary",
 )
 def fuzz(elf: str, dictionary: str) -> None:
-    dictionary_elements = read_dictionary(dictionary)
+    generator = ArgumentsGenerator()
+    generator.load(dictionary)
+    possible_arguments = generator.get_arguments()
 
-    fuzzer = ArgumentsFuzzer(elf, dictionary_elements)
-    arguments = fuzzer.get_all_valid_arguments()
+    fuzzer = ArgumentsFuzzer(elf, possible_arguments)
+    actual_arguments = fuzzer.get_all_valid_arguments()
 
-    print_arguments(arguments)
+    print_arguments(actual_arguments)
 
 
-@cli.command(help="Analyze with all methods")
+def print_arguments(arguments: typing.List[ArgumentsPair]) -> None:
+    if not arguments:
+        print_no_detected_argument()
+    else:
+        print_multiple_detected_arguments(arguments)
+
+
+def print_no_detected_argument() -> None:
+    print(":x: No argument was detected for the given program.")
+
+
+def print_multiple_detected_arguments(
+    arguments: typing.List[ArgumentsPair],
+) -> None:
+    print(
+        ":white_check_mark: Several arguments were detected for the given"
+        " program:\n"
+    )
+
+    table = build_arguments_table(arguments)
+    print(table)
+
+
+def build_arguments_table(arguments: typing.List[ArgumentsPair]) -> Table:
+    table = Table()
+    table.add_column("Argument")
+    table.add_column("Role", justify="center")
+
+    for argument in arguments:
+        argument_str = argument.to_str()
+
+        roles_str = [str(role) for role in argument.valid_roles]
+        roles = ", ".join(roles_str)
+
+        table.add_row(argument_str, roles)
+
+    return table
+
+
+def build_detected_streams_table(streams: dict) -> Table:
+    table = Table()
+
+    table.add_column("Stream")
+    table.add_column("Present", justify="center")
+
+    for key, value in streams.__dict__.items():
+        is_present = "Yes" if value else "No"
+        table.add_row(key, is_present)
+
+    return table
+
+
+@cli.command(help="Analyze with all methods.")
 @click.option(
     "--elf",
     type=click.Path(exists=True, readable=True),
@@ -188,9 +187,9 @@ def analyze(ctx: click.Context, elf: str, dictionary: str) -> None:
     ctx.invoke(fuzz, elf=elf, dictionary=dictionary)
 
 
-cli.add_command(generate)
-cli.add_command(detect)
-cli.add_command(fuzz)
+def main() -> None:
+    cli(prog_name="attack_surface_approximation")
+
 
 if __name__ == "__main__":
-    cli()
+    main()

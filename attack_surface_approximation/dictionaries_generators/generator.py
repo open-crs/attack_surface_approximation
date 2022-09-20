@@ -29,6 +29,14 @@ class ArgumentsGenerator:
         ):
             yield name
 
+    def load(self, dictionary_name: str) -> None:
+        with open(dictionary_name, "r", encoding="utf-8") as dictionary:
+            self.arguments = dictionary.read().strip()
+            self.arguments = self.arguments.split("\n")
+
+    def get_arguments(self) -> typing.List[str]:
+        return self.arguments
+
     def dump(self, output_file: str, top_count: int = 0) -> None:
         if top_count != 0:
             top_filter = TopFilter(top_count)
