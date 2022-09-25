@@ -57,8 +57,8 @@ The argument fuzzer uses Docker and QBDI to detect basic block coverage.
 3. Install the required Python 3 packages via `poetry install --no-dev`.
 4. Build the Docker image: `docker build -t qbdi_args_fuzzing:qbdi_args_fuzzing others/qbdi_docker`.
 5. Ensure the Docker API is accessible by:
-  - Running the module as `root`; or
-  - Changing the Docker socket permissions (unsecure approach) via `chmod 777 /var/run/docker.sock`.
+   - Running the module as `root`; or
+   - Changing the Docker socket permissions (unsecure approach) via `chmod 777 /var/run/docker.sock`.
 
 ## Usage
 
