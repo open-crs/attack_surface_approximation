@@ -1,6 +1,6 @@
 class Configuration:
     class GhidraDecompilation:
-        FOLDER = "/home/iosifache/Documents/Resources/Programs/ghidra/"
+        FOLDER = "/opt/ghidra/"
         HEADLESS_ANALYZER = FOLDER + "support/analyzeHeadless"
         PROJECT_FOLDER = "/tmp/ghidra_projects/"
         PROJECT_NAME = "project"

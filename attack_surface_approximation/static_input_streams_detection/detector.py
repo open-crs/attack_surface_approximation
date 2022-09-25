@@ -62,6 +62,15 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
     ) -> None:  # pylint: disable=invalid-name
         self.__parameters_names = [parameter.name for parameter in node.params]
 
+        self.__check_void_arglist()
+
+    def __check_void_arglist(self) -> None:
+        if (
+            len(self.__parameters_names) == 1
+            and self.__parameters_names[0] is None
+        ):
+            self.__parameters_names = []
+
     def generic_visit(self, node: c_parser.c_ast.Node) -> None:
         self.__check_parameters_used(node)
 

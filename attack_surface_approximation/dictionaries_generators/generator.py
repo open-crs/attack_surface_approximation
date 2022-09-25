@@ -37,7 +37,7 @@ class ArgumentsGenerator:
     def get_arguments(self) -> typing.List[str]:
         return self.arguments
 
-    def dump(self, output_file: str, top_count: int = 0) -> None:
+    def dump(self, output_file: str, top_count: int = 0) -> int:
         if top_count != 0:
             top_filter = TopFilter(top_count)
             filter_func = getattr(top_filter, "filter", None)
@@ -51,6 +51,8 @@ class ArgumentsGenerator:
         arguments = [argument + "\n" for argument in arguments]
 
         open(output_file, "w", encoding="utf-8").writelines(arguments)
+
+        return len(arguments)
 
     def generate(self, heuristic_id: str) -> None:
         heuristic_module = importlib.import_module(

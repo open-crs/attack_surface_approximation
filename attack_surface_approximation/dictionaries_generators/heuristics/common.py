@@ -2,8 +2,7 @@ import string
 import typing
 
 
-def generate() -> typing.Generator[str, None, None]:
+def generate() -> typing.List[str]:
     dictionary = string.ascii_letters + string.digits
 
-    for char in dictionary:
-        yield f"-{char}"
+    return [f"-{char}" for char in dictionary]

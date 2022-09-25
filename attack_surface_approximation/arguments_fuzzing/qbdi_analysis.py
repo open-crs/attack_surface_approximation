@@ -107,20 +107,6 @@ class QBDIAnalysis:
 
         return self.__configuration.CONTAINER_TEMP_FILE
 
-    def __build_analyze_command(
-        self, argument: ArgumentsPair, timeout_retry: bool
-    ) -> str:
-        stringified_arguments = argument.to_str()
-        stdin_avoidance_command = "echo '\n' |" if timeout_retry else ""
-
-        return (
-            f"timeout {self.timeout} sh -c"
-            f"'{stdin_avoidance_command} LD_BIND_NOW=1 "
-            "LD_PRELOAD=./libqbdi_tracer.so "
-            f"{self.__configuration.CONTAINER_EXECUTABLE} "
-            f"{stringified_arguments}'"
-        )
-
     def __build_and_run_analyze_command(
         self, argument: ArgumentsPair, timeout_retry: bool
     ) -> ExecResult:
@@ -129,6 +115,20 @@ class QBDIAnalysis:
         return self.__container.exec_run(
             command,
             workdir="/home/docker",
+        )
+
+    def __build_analyze_command(
+        self, argument: ArgumentsPair, timeout_retry: bool
+    ) -> str:
+        stringified_arguments = argument.to_str()
+        stdin_avoidance_command = "echo '\n' |" if timeout_retry else ""
+
+        return (
+            f"timeout {self.timeout} sh -c "
+            f"'{stdin_avoidance_command} LD_BIND_NOW=1 "
+            "LD_PRELOAD=./libqbdi_tracer.so "
+            f"{self.__configuration.CONTAINER_EXECUTABLE} "
+            f"{stringified_arguments}'"
         )
 
     def __get_analysis_result_filename(self, argument: ArgumentsPair) -> str:

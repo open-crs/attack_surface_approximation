@@ -51,7 +51,12 @@ def cli() -> None:
 def generate(heuristic: str, output: str, top: int) -> None:
     generator = ArgumentsGenerator()
     generator.generate(heuristic)
-    generator.dump(output, top_count=top)
+    arguments_count = generator.dump(output, top_count=top)
+
+    print(
+        ":white_check_mark: Successfully generated dictionary with"
+        f" {arguments_count} arguments"
+    )
 
 
 @cli.command(

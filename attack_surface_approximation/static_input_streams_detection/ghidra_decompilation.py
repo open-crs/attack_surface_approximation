@@ -78,9 +78,15 @@ class GhidraDecompilation:
                 if line.startswith(REPORT_FINISH_LINE):
                     break
 
-                self.calls.add(line.strip())
+                self.calls.add(self.__preprocess_call(line.strip()))
 
         self.__process_decompiled_code()
+
+    def __preprocess_call(self, call: str) -> str:
+        if "::" in call:
+            return call.split("::")[1]
+        else:
+            return call
 
     def __process_decompiled_code(self) -> None:
         self.__replace_undefs()

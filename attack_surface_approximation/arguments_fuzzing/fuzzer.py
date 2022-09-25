@@ -1,15 +1,15 @@
 import typing
 
-from attack_surface_approximation.arguments_fuzzing.arguments_types import ArgumentsPair
-from attack_surface_approximation.arguments_fuzzing.fuzzing_sequence_generator import (
-    FuzzingSequenceGenerator,
-)
+from attack_surface_approximation.arguments_fuzzing.arguments_types import \
+    ArgumentsPair
+from attack_surface_approximation.arguments_fuzzing.fuzzing_sequence_generator import \
+    FuzzingSequenceGenerator
 from attack_surface_approximation.configuration import Configuration
 
 from .qbdi_analysis import QBDIAnalysis
 
 ANALYSIS_TIMEOUT = 3
-CANARY_STRING = "canary"
+CANARY_STRING = "string"
 RANDOM_ARGUMENTS_COUNT = 10
 
 
@@ -22,7 +22,9 @@ class ArgumentsFuzzer:
     baseline_hashes: typing.List[str]
     old_hashes: typing.List[str]
 
-    def __init__(self, executable_filename: str, dictionary: typing.List[str]) -> None:
+    def __init__(
+        self, executable_filename: str, dictionary: typing.List[str]
+    ) -> None:
         self.executable_filename = executable_filename
         self.dictionary = dictionary
 
@@ -65,7 +67,9 @@ class ArgumentsFuzzer:
 
         return False
 
-    def get_valid_argument(self) -> typing.Generator[ArgumentsPair, None, None]:
+    def get_valid_argument(
+        self,
+    ) -> typing.Generator[ArgumentsPair, None, None]:
         arguments = self.arguments_generator.generate_fuzzing_arguments(
             self.baseline_hashes
         )
