@@ -1,6 +1,6 @@
 class Configuration:
     class GhidraDecompilation:
-        FOLDER = "/opt/ghidra/"
+        FOLDER = "/opencrs/ghidra/"
         HEADLESS_ANALYZER = FOLDER + "support/analyzeHeadless"
         PROJECT_FOLDER = "/tmp/ghidra_projects/"
         PROJECT_NAME = "project"

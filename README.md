@@ -52,7 +52,7 @@ The argument fuzzer uses Docker and QBDI to detect basic block coverage.
 
 ## Setup
 
-1. Download Ghidra in `/opt/ghidra`.
+1. Download Ghidra in `/opencrs/ghidra` or in a location at your choice. In the latter case, place the path into `Configuration.GhidraDecompilation.FOLDER` from `configuration.py`.
 2. Ensure you have Docker installed.
 3. Install the required Python 3 packages via `poetry install --no-dev`.
 4. Build the Docker image: `docker build --tag qbdi_args_fuzzing -f docker/Dockerfile.qbdi_docker docker`.
@@ -85,7 +85,7 @@ The argument fuzzer uses Docker and QBDI to detect basic block coverage.
 #### Input Streams Detection
 
 ```
-➜ ./crackme 
+➜ ./crackme
 Enter the password: pass
 Wrong password!
 ➜ poetry run attack_surface_approximation detect --elf crackme
