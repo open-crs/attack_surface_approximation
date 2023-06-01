@@ -68,7 +68,7 @@ The argument fuzzer uses Docker and QBDI to detect basic block coverage.
 
 ```
 ➜ poetry run attack_surface_approximation generate --heuristic man --output args.txt --top 10
-✅ Successfully generated dictionary with 10 arguments
+Successfully generated dictionary with 10 arguments
 ➜ cat args.txt
 --and
 --get
@@ -89,7 +89,7 @@ The argument fuzzer uses Docker and QBDI to detect basic block coverage.
 Enter the password: pass
 Wrong password!
 ➜ poetry run attack_surface_approximation detect --elf crackme
-✅ Several input mechanisms were detected for the given program:
+Several input mechanisms were detected for the given program:
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┓
 ┃ Stream                ┃ Present ┃
@@ -106,7 +106,7 @@ Wrong password!
 
 ```
 ➜ poetry run attack_surface_approximation fuzz --elf /bin/uname --dictionary args.txt
-✅ Several arguments were detected for the given program:
+Several arguments were detected for the given program:
 
 ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
 ┃ Argument  ┃      Role      ┃

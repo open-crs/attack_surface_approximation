@@ -54,8 +54,7 @@ def generate(heuristic: str, output: str, top: int) -> None:
     arguments_count = generator.dump(output, top_count=top)
 
     print(
-        ":white_check_mark: Successfully generated dictionary with"
-        f" {arguments_count} arguments"
+        f"Successfully generated dictionary with {arguments_count} arguments"
     )
 
 
@@ -83,14 +82,11 @@ def print_detected_streams(streams: PresentInputStreams) -> None:
 
 
 def print_no_detected_stream() -> None:
-    print(":x: No input mechanism was detected for the given program.")
+    print("No input mechanism was detected for the given program.")
 
 
 def print_multiple_detected_streams(streams: dict) -> None:
-    print(
-        ":white_check_mark: Several input mechanisms were detected for the"
-        " given program:\n"
-    )
+    print("Several input mechanisms were detected for the given program:\n")
 
     table = build_detected_streams_table(streams)
     print(table)
@@ -128,16 +124,13 @@ def print_arguments(arguments: typing.List[ArgumentsPair]) -> None:
 
 
 def print_no_detected_argument() -> None:
-    print(":x: No argument was detected for the given program.")
+    print("No argument was detected for the given program.")
 
 
 def print_multiple_detected_arguments(
     arguments: typing.List[ArgumentsPair],
 ) -> None:
-    print(
-        ":white_check_mark: Several arguments were detected for the given"
-        " program:\n"
-    )
+    print("Several arguments were detected for the given program:\n")
 
     table = build_arguments_table(arguments)
     print(table)
