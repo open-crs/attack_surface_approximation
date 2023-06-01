@@ -164,7 +164,7 @@ from attack_surface_approximation.static_input_streams_detection import \
     InputStreamsDetector
 
 detector = InputStreamsDetector(elf_filename)
-streams = detector.detect_all()
+streams_list = detector.detect_all()
 ```
 
 #### Arguments Fuzzing

@@ -15,6 +15,7 @@ from attack_surface_approximation.static_input_streams_detection import (
     InputStreamsDetector,
     PresentInputStreams,
 )
+from commons.input_streams import InputStreams
 
 
 @click.group()
@@ -75,7 +76,7 @@ def detect(elf: str) -> None:
 
 
 def print_detected_streams(streams: PresentInputStreams) -> None:
-    if not any(streams.__dict__.values()):
+    if not any(streams):
         print_no_detected_stream()
     else:
         print_multiple_detected_streams(streams)
@@ -158,9 +159,9 @@ def build_detected_streams_table(streams: dict) -> Table:
     table.add_column("Stream")
     table.add_column("Present", justify="center")
 
-    for key, value in streams.__dict__.items():
-        is_present = "Yes" if value else "No"
-        table.add_row(key, is_present)
+    for stream in InputStreams:
+        is_present = "Yes" if stream in streams else "No"
+        table.add_row(stream.name, is_present)
 
     return table
 

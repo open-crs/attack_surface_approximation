@@ -10,25 +10,11 @@ from attack_surface_approximation.exceptions import (
     NotELFFileException,
 )
 from commons.ghidra import GhidraAnalysis
+from commons.input_streams import InputStreams
 
 TEXT_SECTION_IDENTIFIER = ".text"
 MAIN_FUNCTION_NAME = "main"
 COMMENT_PREFIX = "/* WARNING"
-
-
-class PresentInputStreams:
-    files: bool
-    arguments: bool
-    stdin: bool
-    networking: bool
-    environment_variables: bool
-
-    def __init__(self) -> None:
-        self.files = False
-        self.arguments = False
-        self.stdin = False
-        self.networking = False
-        self.environment_variables = False
 
 
 class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
@@ -80,7 +66,7 @@ class InputStreamsDetector:
     __filename: str
     __calls: typing.List[str]
     __main_decompilation: str
-    __input_types: PresentInputStreams
+    __input_types: list[InputStreams]
 
     def __init__(self, filename: str) -> None:
         if os.path.isfile(filename):
@@ -101,7 +87,7 @@ class InputStreamsDetector:
         self.__calls = analysis.extract_calls()
         self.__main_decompilation = analysis.decompile_function("main")
 
-        self.__input_types = PresentInputStreams()
+        self.__input_types = []
 
     @staticmethod
     def __have_element_in_common(first: set, second: set) -> True:
@@ -112,62 +98,59 @@ class InputStreamsDetector:
 
         return len(common_elements) != 0
 
-    def detect_env(self) -> PresentInputStreams:
-        self.__input_types.environment_variables = (
-            self.__have_element_in_common(
-                self.__calls,
-                self.__configuration.INPUT_INDICATOR_ENV,
-            )
+    def uses_env(self) -> bool:
+        return self.__have_element_in_common(
+            self.__calls,
+            self.__configuration.INPUT_INDICATOR_ENV,
         )
 
-        return self.__input_types
-
-    def detect_networking(self) -> PresentInputStreams:
-        self.__input_types.networking = self.__have_element_in_common(
+    def uses_networking(self) -> bool:
+        return self.__have_element_in_common(
             self.__calls,
             self.__configuration.INPUT_INDICATOR_NETWORKING,
         )
 
-        return self.__input_types
-
-    def detect_stdin(self) -> PresentInputStreams:
+    def uses_stdin(self) -> bool:
         calls_of_interest = (
             self.__configuration.INPUT_INDICATOR_STDIN
             + self.__configuration.INPUT_INDICATOR_FILES_STDIN
         )
-        self.__input_types.stdin = self.__have_element_in_common(
-            self.__calls, calls_of_interest
-        )
 
-        return self.__input_types
+        return self.__have_element_in_common(self.__calls, calls_of_interest)
 
-    def detect_files(self) -> PresentInputStreams:
+    def uses_files(self) -> bool:
         # As some system calls can be used with a file descriptor (that can identify
         # the stdin too), the both call types can marked as possible (the next module,
         # the dynamic one, will be activated for further analysis).
-        self.__input_types.files = self.__have_element_in_common(
+        return self.__have_element_in_common(
             self.__calls,
             self.__configuration.INPUT_INDICATOR_FILES_STDIN,
         )
 
-        return self.__input_types
-
-    def detect_arguments(self) -> PresentInputStreams:
+    def uses_arguments(self) -> bool:
         parser = c_parser.CParser()
         ast = parser.parse(self.__main_decompilation)
 
         visitor = ParametersCheckVisitor()
         visitor.visit(ast)
 
-        self.__input_types.arguments = visitor.are_parameters_used()
+        return visitor.are_parameters_used()
 
-        return self.__input_types
+    def __detect_all(self) -> typing.Generator[InputStreams, None, None]:
+        if self.uses_env():
+            yield InputStreams.ENVIRONMENT_VARIABLE
 
-    def detect_all(self) -> PresentInputStreams:
-        self.detect_arguments()
-        self.detect_env()
-        self.detect_files()
-        self.detect_networking()
-        self.detect_stdin()
+        if self.uses_arguments():
+            yield InputStreams.ARGUMENTS
 
-        return self.__input_types
+        if self.uses_files():
+            yield InputStreams.FILES
+
+        if self.uses_stdin():
+            yield InputStreams.STDIN
+
+        if self.uses_networking():
+            yield InputStreams.NETWORKING
+
+    def detect_all(self) -> typing.List[InputStreams]:
+        return list(self.__detect_all())
