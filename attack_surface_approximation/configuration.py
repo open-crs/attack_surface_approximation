@@ -3,28 +3,6 @@ class Configuration:
         FOLDER = "/opencrs/ghidra/"
         HEADLESS_ANALYZER = FOLDER + "support/analyzeHeadless"
 
-    class InputStreamsDetector:
-        # At the moment, some libcalls and syscalls (for example, vfscanf) are
-        # omitted due to an assumption that they are not frequently used in
-        # practice. This list will anyway be continuously update
-        INPUT_INDICATOR_ENV = ["getenv"]
-        INPUT_INDICATOR_NETWORKING = ["recv", "recvfrom", "recvmsg"]
-        INPUT_INDICATOR_FILES_STDIN = [
-            "read",
-            "pread",
-            "fread",
-            "fgets",
-            "fgetc",
-            "fscanf",
-        ]
-        INPUT_INDICATOR_STDIN = [
-            "getc",
-            "getchar",
-            "gets",
-            "scanf",
-            "__isoc99_scanf",
-        ]
-
     class QBDIAnalysis:
         IMAGE_TAG = "qbdi_args_fuzzing"
         HOST_FOLDER = "/tmp/qbdi/"

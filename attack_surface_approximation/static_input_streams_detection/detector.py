@@ -100,31 +100,25 @@ class InputStreamsDetector:
 
     def uses_env(self) -> bool:
         return self.__have_element_in_common(
-            self.__calls,
-            self.__configuration.INPUT_INDICATOR_ENV,
+            self.__calls, InputStreams.ENVIRONMENT_VARIABLE.value.indicators
         )
 
     def uses_networking(self) -> bool:
         return self.__have_element_in_common(
-            self.__calls,
-            self.__configuration.INPUT_INDICATOR_NETWORKING,
+            self.__calls, InputStreams.NETWORKING.value.indicators
         )
 
     def uses_stdin(self) -> bool:
-        calls_of_interest = (
-            self.__configuration.INPUT_INDICATOR_STDIN
-            + self.__configuration.INPUT_INDICATOR_FILES_STDIN
+        return self.__have_element_in_common(
+            self.__calls, InputStreams.STDIN.value.indicators
         )
-
-        return self.__have_element_in_common(self.__calls, calls_of_interest)
 
     def uses_files(self) -> bool:
         # As some system calls can be used with a file descriptor (that can identify
         # the stdin too), the both call types can marked as possible (the next module,
         # the dynamic one, will be activated for further analysis).
         return self.__have_element_in_common(
-            self.__calls,
-            self.__configuration.INPUT_INDICATOR_FILES_STDIN,
+            self.__calls, InputStreams.FILES.value.indicators
         )
 
     def uses_arguments(self) -> bool:
