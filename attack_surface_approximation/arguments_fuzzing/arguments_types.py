@@ -1,30 +1,13 @@
 import abc
 import typing
-from enum import Enum
+
+from commons.arguments import ArgumentRole
+from commons.arguments import ArgumentsPair as BaseArgumentsPair
 
 QBDIAnalysisResult = typing.TypeVar("QBDIAnalysisResult")
 
 
-class ArgumentRole(Enum):
-    FLAG = 0
-    STDIN_ENABLER = 1
-    FILE_ENABLER = 2
-    STRING_ENABLER = 3
-
-    def __str__(self) -> str:
-        return self.name
-
-
-class ArgumentsPair:
-    first: str
-    second: str
-    valid_roles: typing.List[ArgumentRole]
-
-    def __init__(self) -> None:
-        self.first = None
-        self.second = None
-        self.valid_roles = []
-
+class ArgumentsPair(BaseArgumentsPair):
     @abc.abstractmethod
     def attach_roles_based_on_analysis(
         self, result: QBDIAnalysisResult, bbs_hashes_baseline: typing.List[str]
@@ -37,14 +20,6 @@ class ArgumentsPair:
         self.attach_roles_based_on_analysis(result, bbs_hashes_baseline)
 
         return self.valid_roles
-
-    def to_str(self) -> str:
-        if not self.first:
-            return ""
-        elif not self.second:
-            return self.first
-        else:
-            return f"{self.first} {self.second}"
 
     def to_hex_id(self) -> str:
         if not self.first:
@@ -117,4 +92,5 @@ class ArgumentStringArgument(ArgumentsPair):
         self, result: QBDIAnalysisResult, bbs_hashes_baseline: typing.List[str]
     ) -> None:
         if result.bbs_hash not in bbs_hashes_baseline:
+            self.valid_roles.append(ArgumentRole.STRING_ENABLER)
             self.valid_roles.append(ArgumentRole.STRING_ENABLER)

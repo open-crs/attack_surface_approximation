@@ -145,7 +145,7 @@ def build_arguments_table(arguments: typing.List[ArgumentsPair]) -> Table:
     for argument in arguments:
         argument_str = argument.to_str()
 
-        roles_str = [str(role) for role in argument.valid_roles]
+        roles_str = [role.name for role in argument.valid_roles]
         roles = ", ".join(roles_str)
 
         table.add_row(argument_str, roles)
