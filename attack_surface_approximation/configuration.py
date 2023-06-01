@@ -2,16 +2,6 @@ class Configuration:
     class GhidraDecompilation:
         FOLDER = "/opencrs/ghidra/"
         HEADLESS_ANALYZER = FOLDER + "support/analyzeHeadless"
-        PROJECT_FOLDER = "/tmp/ghidra_projects/"
-        PROJECT_NAME = "project"
-        COMMAND_FMT = (
-            HEADLESS_ANALYZER
-            + " "
-            + PROJECT_FOLDER
-            + " "
-            + PROJECT_NAME
-            + " -import {} -overwrite -postscript {}"
-        )
 
     class InputStreamsDetector:
         # At the moment, some libcalls and syscalls (for example, vfscanf) are

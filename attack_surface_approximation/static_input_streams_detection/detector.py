@@ -9,9 +9,7 @@ from attack_surface_approximation.exceptions import (
     ELFNotFoundException,
     NotELFFileException,
 )
-from attack_surface_approximation.static_input_streams_detection.ghidra_decompilation import (
-    GhidraDecompilation,
-)
+from commons.ghidra import GhidraAnalysis
 
 TEXT_SECTION_IDENTIFIER = ".text"
 MAIN_FUNCTION_NAME = "main"
@@ -80,7 +78,8 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
 class InputStreamsDetector:
     __configuration: object = Configuration.InputStreamsDetector
     __filename: str
-    __decompilation: GhidraDecompilation
+    __calls: typing.List[str]
+    __main_decompilation: str
     __input_types: PresentInputStreams
 
     def __init__(self, filename: str) -> None:
@@ -95,7 +94,13 @@ class InputStreamsDetector:
         else:
             raise ELFNotFoundException()
 
-        self.__decompilation = GhidraDecompilation(self.__filename)
+        analysis = GhidraAnalysis(
+            Configuration.GhidraDecompilation.HEADLESS_ANALYZER,
+            self.__filename,
+        )
+        self.__calls = analysis.extract_calls()
+        self.__main_decompilation = analysis.decompile_function("main")
+
         self.__input_types = PresentInputStreams()
 
     @staticmethod
@@ -110,7 +115,7 @@ class InputStreamsDetector:
     def detect_env(self) -> PresentInputStreams:
         self.__input_types.environment_variables = (
             self.__have_element_in_common(
-                self.__decompilation.calls,
+                self.__calls,
                 self.__configuration.INPUT_INDICATOR_ENV,
             )
         )
@@ -119,7 +124,7 @@ class InputStreamsDetector:
 
     def detect_networking(self) -> PresentInputStreams:
         self.__input_types.networking = self.__have_element_in_common(
-            self.__decompilation.calls,
+            self.__calls,
             self.__configuration.INPUT_INDICATOR_NETWORKING,
         )
 
@@ -131,7 +136,7 @@ class InputStreamsDetector:
             + self.__configuration.INPUT_INDICATOR_FILES_STDIN
         )
         self.__input_types.stdin = self.__have_element_in_common(
-            self.__decompilation.calls, calls_of_interest
+            self.__calls, calls_of_interest
         )
 
         return self.__input_types
@@ -141,7 +146,7 @@ class InputStreamsDetector:
         # the stdin too), the both call types can marked as possible (the next module,
         # the dynamic one, will be activated for further analysis).
         self.__input_types.files = self.__have_element_in_common(
-            self.__decompilation.calls,
+            self.__calls,
             self.__configuration.INPUT_INDICATOR_FILES_STDIN,
         )
 
@@ -149,7 +154,7 @@ class InputStreamsDetector:
 
     def detect_arguments(self) -> PresentInputStreams:
         parser = c_parser.CParser()
-        ast = parser.parse(self.__decompilation.decompiled_code)
+        ast = parser.parse(self.__main_decompilation)
 
         visitor = ParametersCheckVisitor()
         visitor.visit(ast)
