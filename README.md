@@ -32,8 +32,8 @@ Some input mechanisms are omitted: elements of the user interface, signals, devi
 In addition, a custom fuzzer is implemented to discover arguments that trigger different code coverage. It takes arguments from a dictionary which can be handcrafted or generated with an exposed command, with an implemented heuristic.
 
 Examples of arguments dictionaries can be found in `examples/dictionaries`:
-- `man.txt`, generated with the `man` heurstic and having 6605 entries; and
-- `common.txt`, generated with the `common` heuristic and having 62 entries.
+- `man.txt`, generated with the `man_parsing` heurstic and having 6605 entries; and
+- `generation.txt`, generated with the `generation` heuristic and having 62 entries.
 
 ### Limitations
 
