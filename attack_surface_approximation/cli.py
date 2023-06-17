@@ -13,7 +13,6 @@ from attack_surface_approximation.dictionaries_generators import (
 )
 from attack_surface_approximation.static_input_streams_detection import (
     InputStreamsDetector,
-    PresentInputStreams,
 )
 from commons.input_streams import InputStreams
 
@@ -80,7 +79,7 @@ def detect(elf: str) -> None:
     print_detected_streams(streams)
 
 
-def print_detected_streams(streams: PresentInputStreams) -> None:
+def print_detected_streams(streams: InputStreams) -> None:
     if not any(streams):
         print_no_detected_stream()
     else:

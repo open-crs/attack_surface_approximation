@@ -62,11 +62,9 @@ class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
 
 
 class InputStreamsDetector:
-    __configuration: object = Configuration.InputStreamsDetector
     __filename: str
     __calls: typing.List[str]
     __main_decompilation: str
-    __input_types: list[InputStreams]
 
     def __init__(self, filename: str) -> None:
         if os.path.isfile(filename):
@@ -80,14 +78,9 @@ class InputStreamsDetector:
         else:
             raise ELFNotFoundException()
 
-        analysis = GhidraAnalysis(
-            Configuration.GhidraDecompilation.HEADLESS_ANALYZER,
-            self.__filename,
-        )
-        self.__calls = analysis.extract_calls()
+        analysis = GhidraAnalysis(self.__filename)
+        self.__calls = list(analysis.extract_calls())
         self.__main_decompilation = analysis.decompile_function("main")
-
-        self.__input_types = []
 
     @staticmethod
     def __have_element_in_common(first: set, second: set) -> True:

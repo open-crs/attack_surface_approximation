@@ -35,7 +35,9 @@ class FuzzingSequenceGenerator:
         self.canary_filename = canary_filename
         self.arguments = arguments
         self.canary_string = canary_string
-        self.generate_random_baseline_arguments = generate_random_baseline_arguments
+        self.generate_random_baseline_arguments = (
+            generate_random_baseline_arguments
+        )
 
     def update_last_analysis_result(
         self, last_analysis_result: QBDIAnalysisResult
@@ -52,7 +54,10 @@ class FuzzingSequenceGenerator:
 
             for _ in range(0, length):
                 text = "".join(
-                    [random.choice(string.ascii_lowercase) for _ in range(0, 10)]
+                    [
+                        random.choice(string.ascii_lowercase)
+                        for _ in range(0, 10)
+                    ]
                 )
 
                 yield ArgumentArgument(arg_preffix + text)
@@ -64,7 +69,9 @@ class FuzzingSequenceGenerator:
         yield from self.__generate_usual_help_arguments()
 
         if self.generate_random_baseline_arguments:
-            yield from self.__generate_invalid_arguments(invalid_arguments_length)
+            yield from self.__generate_invalid_arguments(
+                invalid_arguments_length
+            )
 
     def generate_fuzzing_arguments(
         self, bbs_hashes_baseline: typing.List[str]
@@ -78,8 +85,6 @@ class FuzzingSequenceGenerator:
                 yield ArgumentPlusFileArgument(argument, self.canary_filename)
 
         yield ArgumentArgument("-")
-
-        yield NoneArgument()
 
         for argument in self.arguments:
             yield ArgumentArgument(argument)

@@ -21,12 +21,6 @@ class ArgumentsPair(BaseArgumentsPair):
 
         return self.valid_roles
 
-    def to_hex_id(self) -> str:
-        if not self.first:
-            return "none"
-
-        return self.to_str().encode("utf-8").hex().upper()
-
 
 class NoneArgument(ArgumentsPair):
     first: typing.Optional[str] = None
@@ -92,5 +86,4 @@ class ArgumentStringArgument(ArgumentsPair):
         self, result: QBDIAnalysisResult, bbs_hashes_baseline: typing.List[str]
     ) -> None:
         if result.bbs_hash not in bbs_hashes_baseline:
-            self.valid_roles.append(ArgumentRole.STRING_ENABLER)
             self.valid_roles.append(ArgumentRole.STRING_ENABLER)

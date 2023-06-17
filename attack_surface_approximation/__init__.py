@@ -3,5 +3,5 @@ from attack_surface_approximation.exceptions import (
 )
 from attack_surface_approximation.static_input_streams_detection import (
     InputStreamsDetector,
-    PresentInputStreams,
 )
+from commons import mitigations

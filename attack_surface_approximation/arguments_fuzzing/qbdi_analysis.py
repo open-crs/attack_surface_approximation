@@ -57,8 +57,8 @@ class QBDIAnalysis:
         self.__docker_client = docker.from_env()
         self.__create_container()
 
-    def __del__(self) -> None:
-        self.__container.remove(force=True)
+    # def __del__(self) -> None:
+    #     self.__container.remove(force=True)
 
     def __touch_nested_folder(self, folder_name: str) -> None:
         try:
@@ -79,6 +79,14 @@ class QBDIAnalysis:
     def __create_container(self) -> None:
         self.__create_temporary_folder_structure()
 
+        template = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "qbdi_analysis_scripts/qbdi_preload_template.c",
+        )
+        header = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "qbdi_analysis_scripts/utarray.h",
+        )
         self.__container = self.__docker_client.containers.run(
             self.__configuration.IMAGE_TAG,
             command="tail -f /dev/null",
@@ -93,11 +101,33 @@ class QBDIAnalysis:
                     "bind": self.__configuration.CONTAINER_RESULTS_FOLDER,
                     "mode": "rw",
                 },
+                template: {
+                    "bind": os.path.join(
+                        self.__configuration.CONTAINER_SO_FOLDER,
+                        "qbdi_preload_template.c",
+                    ),
+                    "mode": "rw",
+                },
+                header: {
+                    "bind": os.path.join(
+                        self.__configuration.CONTAINER_SO_FOLDER, "utarray.h"
+                    ),
+                    "mode": "rw",
+                },
             },
         )
 
         self.__container.exec_run(
             f"sudo chmod 555 {self.__configuration.CONTAINER_EXECUTABLE}"
+        )
+
+        self.__container.exec_run(
+            "cmake .",
+            workdir=self.__configuration.CONTAINER_SO_FOLDER,
+        )
+        self.__container.exec_run(
+            "make",
+            workdir=self.__configuration.CONTAINER_SO_FOLDER,
         )
 
     def create_temp_file_inside_container(self) -> str:
@@ -123,11 +153,11 @@ class QBDIAnalysis:
         stringified_arguments = argument.to_str()
         stdin_avoidance_command = "echo '\n' |" if timeout_retry else ""
 
-        return (
+        return (  # TODO: {self.__configuration.CONTAINER_EXECUTABLE}
             f"timeout {self.timeout} sh -c "
             f"'{stdin_avoidance_command} LD_BIND_NOW=1 "
             "LD_PRELOAD=./libqbdi_tracer.so "
-            f"{self.__configuration.CONTAINER_EXECUTABLE} "
+            "uname "
             f"{stringified_arguments}'"
         )
 
@@ -157,6 +187,7 @@ class QBDIAnalysis:
         raw_result = self.__build_and_run_analyze_command(
             argument, timeout_retry
         )
+        print(raw_result.output)  # TODO: remove
 
         result_filename = self.__get_analysis_result_filename(argument)
         bbs_count, bbs_hash, uses_file = self.__parse_raw_output(

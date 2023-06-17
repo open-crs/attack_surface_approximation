@@ -1,9 +1,11 @@
 import typing
 
-from attack_surface_approximation.arguments_fuzzing.arguments_types import \
-    ArgumentsPair
-from attack_surface_approximation.arguments_fuzzing.fuzzing_sequence_generator import \
-    FuzzingSequenceGenerator
+from attack_surface_approximation.arguments_fuzzing.arguments_types import (
+    ArgumentsPair,
+)
+from attack_surface_approximation.arguments_fuzzing.fuzzing_sequence_generator import (
+    FuzzingSequenceGenerator,
+)
 from attack_surface_approximation.configuration import Configuration
 
 from .qbdi_analysis import QBDIAnalysis
@@ -85,7 +87,12 @@ class ArgumentsFuzzer:
             if self.__check_if_argument_is_valid(argument, result):
                 yield argument
 
+            # Ensures the deduplication of --flag and --flag <string>. If the latter
+            # generates a different hash than the baseline ones, it will be detected
+            # as a false flag because of the sequence generation: --flag first, --flag
+            # <string> afterwards.
             self.old_hashes.append(result.bbs_hash)
+
             self.arguments_generator.update_last_analysis_result(result)
 
     def get_all_valid_arguments(self) -> typing.List[ArgumentsPair]:
