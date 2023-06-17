@@ -25,6 +25,11 @@ def cli() -> None:
 
 @cli.command(help="Generate dictionaries with arguments, based on heuristics.")
 @click.option(
+    "--elf",
+    type=click.Path(exists=True, readable=True),
+    help="ELF Executable",
+)
+@click.option(
     "--heuristic",
     type=click.Choice(
         ArgumentsGenerator.get_available_heuristics(),
@@ -49,9 +54,9 @@ def cli() -> None:
         " frequency"
     ),
 )
-def generate(heuristic: str, output: str, top: int) -> None:
+def generate(heuristic: str, output: str, top: int, elf: str = None) -> None:
     generator = ArgumentsGenerator()
-    generator.generate(heuristic)
+    generator.generate(heuristic, elf)
     arguments_count = generator.dump(output, top_count=top)
 
     print(

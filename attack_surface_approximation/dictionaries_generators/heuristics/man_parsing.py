@@ -2,6 +2,7 @@ import gzip
 import re
 import typing
 
+from commons.arguments import ARGUMENTS_PATTERN
 from commons.manuals import get_all_manuals
 
 
@@ -10,7 +11,7 @@ def __unescape_bash_string(string: str) -> None:
 
 
 def __find_arguments(string: str) -> typing.Generator[str, None, None]:
-    arguments = re.findall(r"\s-{1,2}[a-zA-Z0-9][a-zA-Z0-9_-]*", string)
+    arguments = re.findall(ARGUMENTS_PATTERN, string)
 
     yield from (argument.lstrip() for argument in arguments)
 
@@ -33,12 +34,14 @@ def __get_arguments_from_manual(
         yield from arguments
 
 
-def generate() -> typing.List[str]:
+def generate(_: str = None) -> typing.List[str]:
     all_arguments = set()
     for manual_filename in get_all_manuals():
         arguments = __get_arguments_from_manual(
             manual_filename, __find_arguments, unescape=__unescape_bash_string
         )
         all_arguments.update(arguments)
+
+    return all_arguments
 
     return all_arguments

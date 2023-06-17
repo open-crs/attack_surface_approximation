@@ -54,10 +54,10 @@ class ArgumentsGenerator:
 
         return len(arguments)
 
-    def generate(self, heuristic_id: str) -> None:
+    def generate(self, heuristic_id: str, elf: str) -> None:
         heuristic_module = importlib.import_module(
             "attack_surface_approximation.dictionaries_generators"
             f".heuristics.{heuristic_id}"
         )
 
-        self.arguments = heuristic_module.generate()
+        self.arguments = heuristic_module.generate(elf)
