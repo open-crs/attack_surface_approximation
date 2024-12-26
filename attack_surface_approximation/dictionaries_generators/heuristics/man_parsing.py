@@ -21,17 +21,21 @@ def __get_arguments_from_manual(
     filter_func: typing.Callable,
     unescape: typing.Callable = None,
 ) -> typing.Generator[str, None, None]:
-    with gzip.open(filename, "rt") as manual:
-        try:
-            content = manual.read()
-        except UnicodeDecodeError:
-            return
+    try:
+        manual = gzip.open(filename, "rt")
+    except:
+        return
 
-        if unescape:
-            content = unescape(content)
+    try:
+        content = manual.read()
+    except UnicodeDecodeError:
+        return
 
-        arguments = filter_func(content)
-        yield from arguments
+    if unescape:
+        content = unescape(content)
+
+    arguments = filter_func(content)
+    yield from arguments
 
 
 def generate(_: str = None) -> typing.List[str]:
