@@ -8,13 +8,13 @@
 - [Setup](#setup)
 - [Usage](#usage)
   - [As a CLI Tool](#as-a-cli-tool)
-    - [Arguments Dictionary Generation](#arguments-dictionary-generation)
-    - [Input Streams Detection](#input-streams-detection)
-    - [Arguments Fuzzing](#arguments-fuzzing)
-    - [Help](#help)
+    - [Generate Dictionary for Arguments](#generate-dictionary-for-arguments)
+    - [Input Streams Detection](#detect-input-streams)
+    - [Arguments Fuzzing](#fuzz-arguments)
+    - [Get Help](#get-help)
   - [As a Python Module](#as-a-python-module)
-    - [Input Streams Detection](#input-streams-detection-1)
-    - [Arguments Fuzzing](#arguments-fuzzing-1)
+    - [Input Streams Detection](#detect-input-streams-1)
+    - [Arguments Fuzzing](#fuzz-arguments-1)
 
 ---
 
@@ -23,122 +23,179 @@
 `attack_surface_approximation` is the CRS module that deals with the approximation of the attack surface in a vulnerable program.
 
 Some input mechanisms are omitted: elements of the user interface, signals, devices and interrupts. At the moment, the supported mechanisms are the following:
-- Files;
-- Arguments;
-- Standard input;
-- Networking; and
-- Environment variables.
 
-In addition, a custom fuzzer is implemented to discover arguments that trigger different code coverage. It takes arguments from a dictionary which can be handcrafted or generated with an exposed command, with an implemented heuristic.
+- files
+- command-line arguments
+- standard input
+- networking
+- environment variables
+
+In addition, a custom fuzzer is implemented to discover arguments that trigger different code coverage.
+It takes arguments from a dictionary which can be handcrafted or generated with an exposed command, with an implemented heuristic.
 
 Examples of arguments dictionaries can be found in `examples/dictionaries`:
-- `man.txt`, generated with the `man_parsing` heurstic and having 6605 entries; and
-- `generation.txt`, generated with the `generation` heuristic and having 62 entries.
+
+- `man.txt`: generated with the `man_parsing` heuristic and having 6605 entries
+- `generation.txt`: generated with the `generation` heuristic and having 62 entries
 
 ### Limitations
 
 - ELF format
 - x86 architecture
-- Non-static binaries
-- Symbols present (namely, no stripping is involved)
-- No obfuscation technique involved
+- dynamic binaries (static binaries are not supported)
+- symbols present (namely, no stripping is involved)
+- no obfuscation technique involved
 
 ## How It Works
 
-The module works by automating Ghidra for static binary analysis. It extracts information and apply heuristics to determine if a given input stream is present.
+The module works by automating [Ghidra](https://ghidra-sre.org/) for static binary analysis.
+It extracts information and applies heuristics to determine if a given input stream is present.
 
 Examples of such heuristics are:
-- For standard input, calls to `getc()` and `gets()`
-- For networking, calls to `recv()` and `recvfrom()`
-- For arguments, occurrences of `argc` and `argv` in the `main()`'s decompilation.
 
-The argument fuzzer uses Docker and QBDI to detect basic block coverage.
+- for standard input: calls to `getc()` and `gets()`
+- for networking: calls to `recv()` and `recvfrom()`
+- for command-line arguments: occurrences of `argc` and `argv` in `main()`
+
+The argument fuzzer uses [Docker](https://www.docker.com/) for running and [QBDI](https://qbdi.quarkslab.com/) to detect basic-block coverage.
 
 ## Setup
 
-1. Ensure you have Docker installed.
-2. Install the required Python 3 packages via `poetry install --no-dev`.
-3. Ensure the Docker API is accessible by:
-   - Running the module as `root`; or
-   - Changing the Docker socket permissions (unsecure approach) via `chmod 777 /var/run/docker.sock`.
+1. Make sure you have set up the repositories and Python environment according to the [top-level instructions](https://github.com/open-crs#requirements).
+   That is:
+
+   - Docker is installed and is properly running.
+     Check using:
+
+     ```console
+     docker version
+     docker ps -a
+     docker run --rm hello-world
+     ```
+
+     These commands should run without errors.
+
+   - The current module repository and all other module repositories (particularly the [`dataset` repository](https://github.com/open-crs/dataset) and the [`commons` repository](https://github.com/open-crs/commons)) are cloned in the same directory.
+
+   - You are running all commands inside a Python virtual environment.
+     There should be `(.venv)` prefix to your prompt.
+
+   - You have installed Poetry in the virtual environment.
+     If you run:
+
+     ```console
+     which poetry
+     ```
+
+     you should get a path ending with `.venv/bin/poetry`.
+
+1. Disable the Python Keyring:
+
+   ```console
+   export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+   ```
+
+   This is an problem that may occur in certain situations, preventing Poetry from getting packages.
+
+1. Install the required packages with Poetry (based on `pyprojects.toml`):
+
+   ```console
+   poetry install --only main
+   ```
+
+1. Create the `ghidra` and `qbdi_args_fuzzing` Docker images by using the [instructions in the `commons` repository](https://github.com/open-crs/commons?tab=readme-ov-file#setup).
+
+1. Optionally, generate executables by using the [instructions in the `dataset` repository](https://github.com/open-crs/dataset).
 
 ## Usage
 
+You can use the `attack_surface_approximation` module either standalone, as a CLI tool, or integrated into Python applications, as a Python module.
+
 ### As a CLI Tool
 
-#### Arguments Dictionary Generation
+As a CLI tool, you can either use the `cli.py` module:
 
+```console
+python attack_surface_approximation/cli.py
 ```
-➜ poetry run attack_surface_approximation generate --heuristic man --output args.txt --top 10
+
+or the Poetry interface:
+
+```console
+poetry run attack_surface_approximation
+```
+
+#### Generate Dictionary for Arguments
+
+```console
+$ poetry run attack_surface_approximation generate --heuristic man_parsing --output args.txt --top 100
 Successfully generated dictionary with 10 arguments
-➜ cat args.txt
---and
---get
---get-feedbacks
---no-progress-meter
---print-name
--input
--lmydep2
--miniswhite
--nM
--prune
+
+$ head args.txt
+--allow-unrelated-histories
+--analysis-display-unstable-clusters
+--auto-area-segmentation
+--backup-dir
+--callstack-filter
+--cidfile
+--class
+--codename
+--column
+--contained
 ```
 
-#### Input Streams Detection
+#### Detect Input Streams
 
+Use an ELF i386 (32 bit) executable as target for detecting input streams.
+
+For example, you can use one of the executables generated in the [`dataset` repository](https://github.com/open-crs/dataset):
+
+```console
+$ ../dataset/executables/toy_test_suite_1.elf
+Gimme two lines of input:
+aaa
+bbb
 ```
-➜ ./crackme
-Enter the password: pass
-Wrong password!
-➜ poetry run attack_surface_approximation detect --elf crackme
+
+Now, do the attack surface approximation:
+
+```console
+$ poetry run attack_surface_approximation detect --elf $(pwd)/../dataset/executables/toy_test_suite_1.elf
 Several input mechanisms were detected for the given program:
 
-┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┓
-┃ Stream                ┃ Present ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━┩
-│ files                 │   No    │
-│ arguments             │   No    │
-│ stdin                 │   Yes   │
-│ networking            │   No    │
-│ environment_variables │   No    │
-└───────────────────────┴─────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┓
+┃ Stream               ┃ Present ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━┩
+│ STDIN                │   Yes   │
+│ ARGUMENTS            │   Yes   │
+│ FILES                │   Yes   │
+│ ENVIRONMENT_VARIABLE │   Yes   │
+│ NETWORKING           │   Yes   │
+└──────────────────────┴─────────┘
 ```
 
-#### Arguments Fuzzing
+The executable used uses all potential input streams.
 
-```
-➜ poetry run attack_surface_approximation fuzz --elf /bin/uname --dictionary args.txt
+#### Fuzz Arguments
+
+```console
+$ poetry run attack_surface_approximation fuzz --elf $(pwd)/../dataset/executables/toy_test_suite_1.elf --dictionary args.txt
 Several arguments were detected for the given program:
 
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
-┃ Argument  ┃      Role      ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
-│ -         │      FLAG      │
-│ -a        │      FLAG      │
-│ -a string │ STRING_ENABLER │
-│ -i        │      FLAG      │
-│ -i string │ STRING_ENABLER │
-│ -m        │      FLAG      │
-│ -m string │ STRING_ENABLER │
-│ -n        │      FLAG      │
-│ -n string │ STRING_ENABLER │
-│ -o        │      FLAG      │
-│ -o string │ STRING_ENABLER │
-│ -p        │      FLAG      │
-│ -p string │ STRING_ENABLER │
-│ -r        │      FLAG      │
-│ -r string │ STRING_ENABLER │
-│ -s        │      FLAG      │
-│ -s string │ STRING_ENABLER │
-│ -v        │      FLAG      │
-│ -v string │ STRING_ENABLER │
-└───────────┴────────────────┘
+┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
+┃ Argument    ┃      Role      ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
+│ -           │      FLAG      │
+│ --re        │      FLAG      │
+│ --re string │ STRING_ENABLER │
+│ -mmusl      │      FLAG      │
+└─────────────┴────────────────┘
 ```
 
-#### Help
+#### Get Help
 
-```
-➜ poetry run attack_surface_approximation
+```console
+$ poetry run attack_surface_approximation
 Usage: attack_surface_approximation [OPTIONS] COMMAND [ARGS]...
 
   Discovers the attack surface of vulnerable programs.
@@ -155,7 +212,7 @@ Commands:
 
 ### As a Python Module
 
-#### Input Streams Detection
+#### Detect Input Streams
 
 ```python
 from attack_surface_approximation.static_input_streams_detection import \
@@ -165,7 +222,7 @@ detector = InputStreamsDetector(elf_filename)
 streams_list = detector.detect_all()
 ```
 
-#### Arguments Fuzzing
+#### Fuzz Arguments
 
 ```python
 from attack_surface_approximation.arguments_fuzzing import ArgumentsFuzzer
