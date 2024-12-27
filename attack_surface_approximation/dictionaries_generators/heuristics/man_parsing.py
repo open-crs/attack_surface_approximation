@@ -47,5 +47,3 @@ def generate(_: str = None) -> typing.List[str]:
         all_arguments.update(arguments)
 
     return all_arguments
-
-    return all_arguments
