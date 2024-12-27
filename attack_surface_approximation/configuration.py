@@ -1,8 +1,4 @@
 class Configuration:
-    class GhidraDecompilation:
-        FOLDER = "/opencrs/ghidra/"
-        HEADLESS_ANALYZER = FOLDER + "support/analyzeHeadless"
-
     class Fuzzer:
         GENERATE_RANDOM_BASELINE_ARGUMENTS = False
 
