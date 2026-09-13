@@ -80,7 +80,7 @@ The argument fuzzer uses [Docker](https://www.docker.com/) for running and [QBDI
    - You are running all commands inside a Python virtual environment.
      There should be `(.venv)` prefix to your prompt.
 
-   - You have installed uv.
+   - You have installed uv on your system.
      If you run:
 
      ```console
@@ -95,7 +95,7 @@ The argument fuzzer uses [Docker](https://www.docker.com/) for running and [QBDI
    ```console
    uv venv
    source .venv/bin/activate
-   uv sync
+   uv sync --no-dev
 
 1. Create the `ghidra` and `qbdi_args_fuzzing` Docker images by using the [instructions in the `commons` repository](https://github.com/open-crs/commons?tab=readme-ov-file#setup).
 
