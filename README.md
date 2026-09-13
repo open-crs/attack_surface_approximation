@@ -80,32 +80,27 @@ The argument fuzzer uses [Docker](https://www.docker.com/) for running and [QBDI
    - You are running all commands inside a Python virtual environment.
      There should be `(.venv)` prefix to your prompt.
 
-   - You have installed Poetry in the virtual environment.
+   - You have installed uv on your system.
      If you run:
 
      ```console
-     which poetry
+     which uv
      ```
 
-     you should get a path ending with `.venv/bin/poetry`.
+     you should get a path ending with `.local/bin/uv`.
 
-1. Disable the Python Keyring:
 
-   ```console
-   export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
-   ```
-
-   This is a problem that may occur in certain situations, preventing Poetry from getting packages.
-
-1. Install the required packages with Poetry (based on `pyprojects.toml`):
+1. Install the required packages using uv (based on `pyproject.toml`):
 
    ```console
-   poetry install --only main
-   ```
+   uv venv
+   source .venv/bin/activate
+   uv sync --no-dev
 
 1. Create the `ghidra` and `qbdi_args_fuzzing` Docker images by using the [instructions in the `commons` repository](https://github.com/open-crs/commons?tab=readme-ov-file#setup).
 
 1. Optionally, generate executables by using the [instructions in the `dataset` repository](https://github.com/open-crs/dataset).
+
 
 ## Usage
 
@@ -119,16 +114,16 @@ As a CLI tool, you can either use the `cli.py` module:
 python attack_surface_approximation/cli.py
 ```
 
-or the Poetry interface:
+or the uv interface:
 
 ```console
-poetry run attack_surface_approximation
+uv run attack_surface_approximation
 ```
 
 #### Generate Dictionary for Arguments
 
 ```console
-$ poetry run attack_surface_approximation generate --heuristic man_parsing --output args.txt --top 100
+$ uv run attack_surface_approximation generate --heuristic man_parsing --output args.txt --top 100
 Successfully generated dictionary with 10 arguments
 
 $ head args.txt
@@ -160,7 +155,7 @@ bbb
 Now, do the attack surface approximation:
 
 ```console
-$ poetry run attack_surface_approximation detect --elf $(pwd)/../dataset/executables/toy_test_suite_1.elf
+$ uv run attack_surface_approximation detect --elf $(pwd)/../dataset/executables/toy_test_suite_1.elf
 Several input mechanisms were detected for the given program:
 
 ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┓
@@ -179,7 +174,7 @@ The executable used uses all potential input streams.
 #### Fuzz Arguments
 
 ```console
-$ poetry run attack_surface_approximation fuzz --elf $(pwd)/../dataset/executables/toy_test_suite_1.elf --dictionary args.txt
+$ uv run attack_surface_approximation fuzz --elf $(pwd)/../dataset/executables/toy_test_suite_1.elf --dictionary args.txt
 Several arguments were detected for the given program:
 
 ┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
@@ -195,7 +190,7 @@ Several arguments were detected for the given program:
 #### Get Help
 
 ```console
-$ poetry run attack_surface_approximation
+$ uv run attack_surface_approximation
 Usage: attack_surface_approximation [OPTIONS] COMMAND [ARGS]...
 
   Discovers the attack surface of vulnerable programs.
