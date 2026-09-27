@@ -11,10 +11,6 @@ from attack_surface_approximation.arguments_fuzzing.arguments_types import (
     FileArgument,
     NoneArgument,
 )
-from attack_surface_approximation.arguments_fuzzing.qbdi_analysis import (
-    QBDIAnalysisResult,
-)
-
 ArgumentsGenerator = typing.Generator[ArgumentsPair, None, None]
 
 
@@ -22,7 +18,6 @@ class FuzzingSequenceGenerator:
     arguments: typing.List[str]
     canary_filename: str
     canary_string: str
-    last_analysis_result: str
     generate_random_baseline_arguments: bool
 
     def __init__(
@@ -38,11 +33,6 @@ class FuzzingSequenceGenerator:
         self.generate_random_baseline_arguments = (
             generate_random_baseline_arguments
         )
-
-    def update_last_analysis_result(
-        self, last_analysis_result: QBDIAnalysisResult
-    ) -> None:
-        self.last_analysis_result = last_analysis_result
 
     def __generate_usual_help_arguments(self) -> ArgumentsGenerator:
         for arg in ["-h", "--help"]:
@@ -77,15 +67,16 @@ class FuzzingSequenceGenerator:
         self, bbs_hashes_baseline: typing.List[str]
     ) -> ArgumentsGenerator:
         arg = FileArgument(self.canary_filename)
-        yield arg
-        if ArgumentRole.FILE_ENABLER not in arg.get_roles_based_on_analysis(
-            self.last_analysis_result, bbs_hashes_baseline
-        ):
-            for argument in self.arguments:
-                yield ArgumentPlusFileArgument(argument, self.canary_filename)
+        file_argument_result = yield arg
 
         yield ArgumentArgument("-")
 
         for argument in self.arguments:
             yield ArgumentArgument(argument)
             yield ArgumentStringArgument(argument, self.canary_string)
+
+        if ArgumentRole.FILE_ENABLER not in arg.get_roles_based_on_analysis(
+            file_argument_result, bbs_hashes_baseline
+        ):
+            for argument in self.arguments:
+                yield ArgumentPlusFileArgument(argument, self.canary_filename)

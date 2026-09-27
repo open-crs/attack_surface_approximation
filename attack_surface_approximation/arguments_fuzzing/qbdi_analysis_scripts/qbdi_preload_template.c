@@ -17,6 +17,7 @@
 #define BLOCKS_USED_IN_HASH 10000
 #define MAX_ARGS_LENGTH 100
 #define OUTPUT_FOLDER "results/"
+#define HASH_BUF_SIZE (BLOCKS_USED_IN_HASH * 10) // Enough for 10000 hex ints
 
 /* Structures */
 
@@ -40,7 +41,7 @@ UT_array *blocks;
 char command_line[MAX_ARGS_LENGTH] = {'\0'};
 char fds_location[20] = {'\0'};
 pid_t pid;
-char start_trace = 0, uses_canaries = 0;
+char start_trace = 0, uses_canaries = 0, set_hash_mode = 0;
 
 QBDIPRELOAD_INIT;
 
@@ -81,7 +82,7 @@ char *encode_command_line(const unsigned char *command, size_t length) {
 static VMAction show_basic_block_callback(VMInstanceRef vm, const VMState* vmState, GPRState* gprState, FPRState* fprState, void* data) {
     size_t start_address, end_address;
     int abstract_address;
-    char parent_segment = -1, i;
+    int parent_segment = -1, i;
 
     // Check if the program reached main
     if (!start_trace) return QBDI_CONTINUE;
@@ -102,9 +103,19 @@ static VMAction show_basic_block_callback(VMInstanceRef vm, const VMState* vmSta
         }
     }
 
+    // Safety check: if parent segment not found, skip this block
+    if (parent_segment == -1)
+        return QBDI_CONTINUE;
+
     // Compute the abstract address
     start_address -= segments[parent_segment].start;
     abstract_address = (parent_segment << 24) + start_address;
+    if (set_hash_mode) {
+        int *q;
+        for (q = (int*)utarray_front(blocks); q != NULL; q = (int*)utarray_next(blocks, q)) {
+            if (*q == abstract_address) return QBDI_CONTINUE;
+        }
+    }
     utarray_push_back(blocks, &abstract_address);
 
     return QBDI_CONTINUE;
@@ -170,13 +181,18 @@ int qbdipreload_on_main(int argc, char **argv) {
 
     // Start the tracing
     start_trace = 1;
+    set_hash_mode = (getenv("USE_SET_HASH") != NULL);
 
     // Copy the arguments
     for (i = 1; i < argc; i++) {
+        if (strlen(command_line) + strlen(argv[i]) + 2 >= MAX_ARGS_LENGTH)
+            break;
         strcat(command_line, argv[i]);
         strcat(command_line, " ");
     }
-    command_line[strlen(command_line) - 1] = '\0';
+    if (argc > 1 && strlen(command_line) > 0) {
+        command_line[strlen(command_line) - 1] = '\0';
+    }
 
     return QBDIPRELOAD_NOT_HANDLED;
 }
@@ -184,7 +200,7 @@ int qbdipreload_on_main(int argc, char **argv) {
 void get_segments() {
     qbdi_MemoryMap *maps;
     size_t maps_count;
-    int i;
+    int i, j = 0;
 
     // Get the memory maps
     maps = qbdi_getCurrentProcessMaps(false, &maps_count);
@@ -202,8 +218,9 @@ void get_segments() {
     // Store the segments
     for (i = 0; i < maps_count; i++) {
         if (maps[i].permission >= QBDI_PF_EXEC && maps[i].end < MIN_MAPPED_ADDRESS) {
-            segments[i].start = maps[i].start;
-            segments[i].end = maps[i].end;
+            segments[j].start = maps[i].start;
+            segments[j].end = maps[i].end;
+            j++;
         }
     }
 }
@@ -225,16 +242,19 @@ int qbdipreload_on_run(VMInstanceRef vm, rword start, rword stop) {
 
 int qbdipreload_on_exit(int status) {
     FILE *output_file;
-    char hashed[2 * BLOCKS_USED_IN_HASH * sizeof(int)] = {'\0'};
-    char current_hash[2 * sizeof(int)];
+    char *hashed = malloc(HASH_BUF_SIZE);
+    char current_hash[16];
     char output_filename[2 * MAX_ARGS_LENGTH + sizeof(OUTPUT_FOLDER) + 1] = {'\0'};
     int *p;
     int i = 0;
-    char uses_canaries_str;
+
+    if (!hashed) return QBDIPRELOAD_NO_ERROR;
+    memset(hashed, 0, HASH_BUF_SIZE);
 
     // Create the string to be hashed
     for (p = (int*)utarray_front(blocks); p != NULL && i < BLOCKS_USED_IN_HASH; p = (int*)utarray_next(blocks, p), i++) {
-        sprintf(current_hash, "%x", *p);
+        int written = sprintf(current_hash, "%x", *p);
+        if (strlen(hashed) + written >= HASH_BUF_SIZE - 1) break;
         strcat(hashed, current_hash);
     }
 
@@ -242,7 +262,11 @@ int qbdipreload_on_exit(int status) {
     strcat(output_filename, OUTPUT_FOLDER);
     strcat(output_filename, encode_command_line(command_line, strlen(command_line)));
     output_file = fopen(output_filename, "w");
-    fprintf(output_file, "%d %ld %d", utarray_len(blocks), hash(hashed), uses_canaries);
+    if (output_file) {
+        fprintf(output_file, "%d %lu %d", utarray_len(blocks), hash(hashed), uses_canaries);
+        fclose(output_file);
+    }
 
+    free(hashed);
     return QBDIPRELOAD_NO_ERROR;
 }
