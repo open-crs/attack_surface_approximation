@@ -1,10 +1,12 @@
+import os
+
 class Configuration:
     class Fuzzer:
         GENERATE_RANDOM_BASELINE_ARGUMENTS = False
 
     class QBDIAnalysis:
         IMAGE_TAG = "qbdi_args_fuzzing"
-        HOST_FOLDER = "/tmp/qbdi/"
+        HOST_FOLDER = f"/tmp/qbdi_uid_{os.getuid()}/"
         HOST_DICTIONARIES_FOLDER = HOST_FOLDER + "dictionaries/"
         HOST_EXECUTABLE_FOLDER = HOST_FOLDER + "target/"
         HOST_EXECUTABLE = HOST_EXECUTABLE_FOLDER + "target"
