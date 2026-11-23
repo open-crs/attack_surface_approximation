@@ -16,6 +16,20 @@ TEXT_SECTION_IDENTIFIER = ".text"
 MAIN_FUNCTION_NAME = "main"
 COMMENT_PREFIX = "/* WARNING"
 
+GHIDRA_TYPEDEFS = """
+typedef unsigned char   undefined;
+typedef unsigned char   undefined1;
+typedef unsigned short  undefined2;
+typedef unsigned int    undefined4;
+typedef unsigned long   undefined8;
+typedef unsigned char   byte;
+typedef unsigned int    uint;
+typedef unsigned long   ulong;
+typedef unsigned short  ushort;
+typedef void            code;
+typedef struct _IO_FILE FILE;
+"""
+
 
 class ParametersCheckVisitor(c_parser.c_ast.NodeVisitor):
     __parameters_names: typing.List[str]
@@ -116,7 +130,7 @@ class InputStreamsDetector:
 
     def uses_arguments(self) -> bool:
         parser = c_parser.CParser()
-        ast = parser.parse(self.__main_decompilation)
+        ast = parser.parse(GHIDRA_TYPEDEFS + self.__main_decompilation)
 
         visitor = ParametersCheckVisitor()
         visitor.visit(ast)

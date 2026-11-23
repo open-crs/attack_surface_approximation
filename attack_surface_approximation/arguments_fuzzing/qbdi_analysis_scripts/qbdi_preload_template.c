@@ -11,9 +11,19 @@
 #include "QBDIPreload.h"
 #include "utarray.h"
 
+#if defined(__aarch64__)
+#define QBDI_PC(gprState) ((gprState)->pc)
+#elif defined(__x86_64__)
+#define QBDI_PC(gprState) ((gprState)->rip)
+#elif defined(__i386__)
+#define QBDI_PC(gprState) ((gprState)->eip)
+#else
+#error "Unsupported architecture for the QBDI preload tracer"
+#endif
+
 /* Constants and configuration */
 
-#define MIN_MAPPED_ADDRESS 0xf0000000
+#define MIN_MAPPED_ADDRESS 0xf0000000UL
 #define BLOCKS_USED_IN_HASH 10000
 #define MAX_ARGS_LENGTH 100
 #define OUTPUT_FOLDER "results/"
@@ -21,8 +31,8 @@
 /* Structures */
 
 typedef struct {
-    unsigned int start;
-    unsigned int end;
+    rword start;
+    rword end;
 } segment;
 
 typedef struct {
@@ -119,8 +129,7 @@ static VMAction transfer_execution_callback(VMInstanceRef vm, const VMState *vmS
     unsigned int len;
 
     // Get the context
-    dladdr((void *)gprState->eip, &info);
-
+    dladdr((void *)QBDI_PC(gprState), &info);  
     // Check if the current call is to close
     if (info.dli_sname != NULL && strstr(info.dli_sname, "close") != NULL) {
         directory = opendir(fds_location);
