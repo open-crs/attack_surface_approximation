@@ -88,7 +88,7 @@ class QBDIAnalysis:
             "qbdi_analysis_scripts/utarray.h",
         )
         self.__container = self.__docker_client.containers.run(
-            self.__configuration.IMAGE_TAG,
+            self.__configuration.image_tag(),
             command="tail -f /dev/null",
             detach=True,
             tty=True,
